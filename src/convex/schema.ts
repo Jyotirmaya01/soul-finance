@@ -51,12 +51,16 @@ const schema = defineSchema(
       dashboardTheme: v.optional(v.string()),
       topValues: v.optional(v.array(v.string())),
       
-      // New profile fields
+      // Profile fields
       profilePhoto: v.optional(v.string()),
       bio: v.optional(v.string()),
       currency: v.optional(v.string()),
       isPremium: v.optional(v.boolean()),
       newsletterSubscribed: v.optional(v.boolean()),
+      
+      // New profile fields
+      phoneNumber: v.optional(v.string()),
+      dateOfBirth: v.optional(v.string()),
     }).index("email", ["email"]),
 
     soulScans: defineTable({

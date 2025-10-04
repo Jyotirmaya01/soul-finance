@@ -8,6 +8,9 @@ export const updateProfile = mutation({
     bio: v.optional(v.string()),
     currency: v.optional(v.string()),
     newsletterSubscribed: v.optional(v.boolean()),
+    phoneNumber: v.optional(v.string()),
+    dateOfBirth: v.optional(v.string()),
+    profilePhoto: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -18,6 +21,9 @@ export const updateProfile = mutation({
     if (args.bio !== undefined) updates.bio = args.bio;
     if (args.currency !== undefined) updates.currency = args.currency;
     if (args.newsletterSubscribed !== undefined) updates.newsletterSubscribed = args.newsletterSubscribed;
+    if (args.phoneNumber !== undefined) updates.phoneNumber = args.phoneNumber;
+    if (args.dateOfBirth !== undefined) updates.dateOfBirth = args.dateOfBirth;
+    if (args.profilePhoto !== undefined) updates.profilePhoto = args.profilePhoto;
 
     await ctx.db.patch(user._id, updates);
 
@@ -54,6 +60,8 @@ export const getProfile = query({
       newsletterSubscribed: user.newsletterSubscribed || false,
       archetype: user.archetype,
       peaceMeter: user.peaceMeter,
+      phoneNumber: user.phoneNumber,
+      dateOfBirth: user.dateOfBirth,
     };
   },
 });

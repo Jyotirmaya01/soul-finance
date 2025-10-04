@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Investments from "./pages/Investments.tsx";
 import Community from "./pages/Community.tsx";
 import Calculators from "./pages/Calculators.tsx";
+import Profile from "./pages/Profile.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -57,6 +58,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/investments" element={<Investments />} />
             <Route path="/community" element={<Community />} />
             <Route path="/calculators" element={<Calculators />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
