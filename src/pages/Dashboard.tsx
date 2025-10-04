@@ -1,6 +1,10 @@
 import { PeaceMeter } from "@/components/PeaceMeter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,10 +20,16 @@ export default function Dashboard() {
   const { isLoading: authLoading, isAuthenticated, user, signOut } = useAuth();
   const [journalNote, setJournalNote] = useState("");
   const [selectedMood, setSelectedMood] = useState("");
+  const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [goalTitle, setGoalTitle] = useState("");
+  const [goalAmount, setGoalAmount] = useState("");
+  const [goalCurrentAmount, setGoalCurrentAmount] = useState("");
+  const [goalDate, setGoalDate] = useState("");
+  const [goalCategory, setGoalCategory] = useState("savings");
 
-  // const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 7 });
   const lifeGoals = useQuery(api.lifeGoals.getUserLifeGoals);
   const createMoodEntry = useMutation(api.moodJournals.createMoodEntry);
+  const createLifeGoal = useMutation(api.lifeGoals.createLifeGoal);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -67,6 +77,33 @@ export default function Dashboard() {
     }
   };
 
+  const handleAddGoal = async () => {
+    if (!goalTitle.trim() || !goalAmount || !goalDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      await createLifeGoal({
+        title: goalTitle,
+        targetAmount: Number(goalAmount),
+        currentAmount: Number(goalCurrentAmount) || 0,
+        targetDate: goalDate,
+        category: goalCategory,
+        priority: 1,
+      });
+      toast.success("Goal added! 🎯");
+      setIsAddGoalOpen(false);
+      setGoalTitle("");
+      setGoalAmount("");
+      setGoalCurrentAmount("");
+      setGoalDate("");
+      setGoalCategory("savings");
+    } catch (error) {
+      toast.error("Failed to add goal");
+    }
+  };
+
   const getArchetypeName = (archetype?: string) => {
     const names: Record<string, string> = {
       earth_guardian: "The Earth Guardian",
@@ -107,6 +144,10 @@ export default function Dashboard() {
             <Button variant="ghost" onClick={() => navigate("/community")}>
               <Users className="mr-2 h-4 w-4" />
               Community
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/calculators")}>
+              <Target className="mr-2 h-4 w-4" />
+              Calculators
             </Button>
             <Button variant="ghost" onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -217,7 +258,7 @@ export default function Dashboard() {
                 ) : (
                   <p className="text-sm text-muted-foreground">No goals yet. Let's create some!</p>
                 )}
-                <Button variant="outline" className="w-full mt-4" size="sm">
+                <Button variant="outline" className="w-full mt-4" size="sm" onClick={() => setIsAddGoalOpen(true)}>
                   Add Goal
                 </Button>
               </CardContent>
@@ -292,6 +333,80 @@ export default function Dashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* Add Goal Dialog */}
+      <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add a Life Goal</DialogTitle>
+            <DialogDescription>
+              Set a financial goal and track your progress
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="goal-title">Goal Title *</Label>
+              <Input
+                id="goal-title"
+                placeholder="e.g., Buy a house"
+                value={goalTitle}
+                onChange={(e) => setGoalTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goal-amount">Target Amount (₹) *</Label>
+              <Input
+                id="goal-amount"
+                type="number"
+                placeholder="e.g., 5000000"
+                value={goalAmount}
+                onChange={(e) => setGoalAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goal-current">Current Amount (₹)</Label>
+              <Input
+                id="goal-current"
+                type="number"
+                placeholder="e.g., 500000"
+                value={goalCurrentAmount}
+                onChange={(e) => setGoalCurrentAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goal-date">Target Date *</Label>
+              <Input
+                id="goal-date"
+                type="date"
+                value={goalDate}
+                onChange={(e) => setGoalDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goal-category">Category</Label>
+              <Select value={goalCategory} onValueChange={setGoalCategory}>
+                <SelectTrigger id="goal-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="savings">Savings</SelectItem>
+                  <SelectItem value="investment">Investment</SelectItem>
+                  <SelectItem value="property">Property</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="retirement">Retirement</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddGoalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddGoal}>Add Goal</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

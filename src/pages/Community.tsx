@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Plus, Users } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -16,6 +21,13 @@ export default function Community() {
   const publicCircles = useQuery(api.circles.getPublicCircles);
   const userCircles = useQuery(api.circles.getUserCircles);
   const joinCircle = useMutation(api.circles.joinCircle);
+  const createCircle = useMutation(api.circles.createCircle);
+
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [circleName, setCircleName] = useState("");
+  const [circleDescription, setCircleDescription] = useState("");
+  const [circleType, setCircleType] = useState("mutual_fund");
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -29,6 +41,31 @@ export default function Community() {
       toast.success("Joined circle! 🎉");
     } catch (error) {
       toast.error("Failed to join circle");
+    }
+  };
+
+  const handleCreateCircle = async () => {
+    if (!circleName.trim() || !circleDescription.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      await createCircle({
+        name: circleName,
+        description: circleDescription,
+        isPublic,
+        tags: [],
+        communityType: circleType,
+      });
+      toast.success("Circle created! 🎉");
+      setIsCreateDialogOpen(false);
+      setCircleName("");
+      setCircleDescription("");
+      setCircleType("mutual_fund");
+      setIsPublic(true);
+    } catch (error) {
+      toast.error("Failed to create circle");
     }
   };
 
@@ -76,7 +113,7 @@ export default function Community() {
           <TabsContent value="discover" className="space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold">Public Circles</h3>
-              <Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Circle
               </Button>
@@ -150,6 +187,74 @@ export default function Community() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Create Circle Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create a New Circle</DialogTitle>
+            <DialogDescription>
+              Start a community around your financial interests
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="circle-name">Circle Name</Label>
+              <Input
+                id="circle-name"
+                placeholder="e.g., Tech Stock Investors"
+                value={circleName}
+                onChange={(e) => setCircleName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="circle-description">Description</Label>
+              <Textarea
+                id="circle-description"
+                placeholder="What is this circle about?"
+                value={circleDescription}
+                onChange={(e) => setCircleDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="circle-type">Community Type</Label>
+              <Select value={circleType} onValueChange={setCircleType}>
+                <SelectTrigger id="circle-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mutual_fund">Mutual Fund</SelectItem>
+                  <SelectItem value="sip">SIP</SelectItem>
+                  <SelectItem value="stocks">Stocks</SelectItem>
+                  <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                  <SelectItem value="real_estate">Real Estate</SelectItem>
+                  <SelectItem value="finance_news">Finance News</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="is-public"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                className="rounded"
+              />
+              <Label htmlFor="is-public" className="cursor-pointer">
+                Make this circle public
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCircle}>Create Circle</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
