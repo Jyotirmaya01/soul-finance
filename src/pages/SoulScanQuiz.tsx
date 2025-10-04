@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const quizSections = [
   {
@@ -182,11 +183,7 @@ export default function SoulScanQuiz() {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Preparing your Soul Scan..." />;
   }
 
   return (

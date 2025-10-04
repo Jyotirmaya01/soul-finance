@@ -13,6 +13,7 @@ import { ArrowLeft, Camera, Crown, Loader2, Save, Sparkles } from "lucide-react"
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -123,11 +124,7 @@ export default function Profile() {
   };
 
   if (authLoading || !user || !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading your profile..." />;
   }
 
   return (

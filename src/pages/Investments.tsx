@@ -5,10 +5,11 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Heart, Leaf, Loader2, Shield, TrendingUp } from "lucide-react";
+import { ArrowLeft, ExternalLink, Heart, Leaf, Shield, TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -28,11 +29,7 @@ export default function Investments() {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Finding investments for you..." />;
   }
 
   return (

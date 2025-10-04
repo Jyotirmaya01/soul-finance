@@ -1,34 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Plus, Users } from "lucide-react";
+import { ArrowLeft, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Community() {
   const navigate = useNavigate();
   const { isLoading: authLoading, isAuthenticated } = useAuth();
-  const publicCircles = useQuery(api.circles.getPublicCircles);
-  const userCircles = useQuery(api.circles.getUserCircles);
-  const joinCircle = useMutation(api.circles.joinCircle);
-  const createCircle = useMutation(api.circles.createCircle);
-
+  const [searchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [circleName, setCircleName] = useState("");
   const [circleDescription, setCircleDescription] = useState("");
   const [circleType, setCircleType] = useState("mutual_fund");
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  const publicCircles = useQuery(api.circles.getPublicCircles);
+  const userCircles = useQuery(api.circles.getUserCircles);
+  const searchResults = useQuery(
+    api.circles.searchCircles,
+    searchQuery ? { searchTerm: searchQuery } : "skip"
+  );
+  const joinCircle = useMutation(api.circles.joinCircle);
+  const createCircle = useMutation(api.circles.createCircle);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -36,10 +42,10 @@ export default function Community() {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  const handleJoinCircle = async (circleId: string) => {
+  const handleJoinCircle = async (circleId: any) => {
     try {
       await joinCircle({ circleId: circleId as any });
-      toast.success("Joined circle! 🎉");
+      toast.success("Joined circle successfully! 🎉");
     } catch (error) {
       toast.error("Failed to join circle");
     }
@@ -47,7 +53,7 @@ export default function Community() {
 
   const handleCreateCircle = async () => {
     if (!circleName.trim() || !circleDescription.trim()) {
-      toast.error("Please fill in all fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -55,27 +61,25 @@ export default function Community() {
       await createCircle({
         name: circleName,
         description: circleDescription,
-        isPublic,
-        tags: [],
         communityType: circleType,
+        isPublic: !isPrivate,
+        tags: [],
       });
-      toast.success("Circle created! 🎉");
+      toast.success("Circle created successfully! 🎉");
       setIsCreateDialogOpen(false);
       setCircleName("");
       setCircleDescription("");
       setCircleType("mutual_fund");
-      setIsPublic(true);
+      setIsPrivate(false);
     } catch (error) {
       toast.error("Failed to create circle");
     }
   };
 
+  const displayCircles = searchQuery ? searchResults : publicCircles;
+
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading community..." />;
   }
 
   return (
@@ -121,7 +125,7 @@ export default function Community() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {publicCircles?.map((circle, index) => (
+              {displayCircles?.map((circle, index) => (
                 <motion.div
                   key={circle._id}
                   initial={{ opacity: 0, y: 20 }}
@@ -238,13 +242,13 @@ export default function Community() {
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                id="is-public"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
+                id="is-private"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
                 className="rounded"
               />
-              <Label htmlFor="is-public" className="cursor-pointer">
-                Make this circle public
+              <Label htmlFor="is-private" className="cursor-pointer">
+                Make this circle private
               </Label>
             </div>
           </div>

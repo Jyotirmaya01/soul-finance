@@ -10,10 +10,11 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { BookHeart, Heart, Loader2, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar } from "lucide-react";
+import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -132,11 +133,7 @@ export default function Dashboard() {
   };
 
   if (authLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading your dashboard..." />;
   }
 
   return (
