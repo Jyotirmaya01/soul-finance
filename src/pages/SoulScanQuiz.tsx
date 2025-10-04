@@ -109,8 +109,12 @@ export default function SoulScanQuiz() {
   const progress = ((currentSection + 1) / quizSections.length) * 100;
   const section = quizSections[currentSection];
 
+  if (!section) {
+    return null;
+  }
+
   const toggleAnswer = (option: string) => {
-    const sectionAnswers = answers[section.id];
+    const sectionAnswers = answers[section.id] || [];
     if (sectionAnswers.includes(option)) {
       setAnswers({
         ...answers,
@@ -125,7 +129,8 @@ export default function SoulScanQuiz() {
   };
 
   const handleNext = () => {
-    if (answers[section.id].length === 0) {
+    const currentAnswers = answers[section.id] || [];
+    if (currentAnswers.length === 0) {
       toast.error("Please select at least one option");
       return;
     }
@@ -141,14 +146,15 @@ export default function SoulScanQuiz() {
   };
 
   const handleSubmit = async () => {
-    if (answers[section.id].length === 0) {
+    const currentAnswers = answers[section.id] || [];
+    if (currentAnswers.length === 0) {
       toast.error("Please select at least one option");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const result = await submitSoulScan({ 
+      await submitSoulScan({ 
         answers: {
           personality: answers.personality || [],
           values: answers.values || [],
@@ -224,7 +230,7 @@ export default function SoulScanQuiz() {
                 >
                   <label className="flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary hover:bg-accent">
                     <Checkbox
-                      checked={answers[section.id].includes(option)}
+                      checked={(answers[section.id] || []).includes(option)}
                       onCheckedChange={() => toggleAnswer(option)}
                     />
                     <span className="text-sm leading-relaxed">{option}</span>

@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [journalNote, setJournalNote] = useState("");
   const [selectedMood, setSelectedMood] = useState("");
 
-  const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 7 });
+  // const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 7 });
   const lifeGoals = useQuery(api.lifeGoals.getUserLifeGoals);
   const createMoodEntry = useMutation(api.moodJournals.createMoodEntry);
 
@@ -52,7 +52,7 @@ export default function Dashboard() {
 
     try {
       await createMoodEntry({
-        date: new Date().toISOString().split("T")[0],
+        date: new Date().toISOString().split("T")[0] as string,
         mood: mood.label,
         emoji: mood.emoji,
         note: journalNote,
