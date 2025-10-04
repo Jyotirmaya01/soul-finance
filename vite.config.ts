@@ -11,4 +11,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ["canvas-confetti"],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/canvas-confetti/, /node_modules/],
+    },
+  },
 });
