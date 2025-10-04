@@ -10,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { BookHeart, Heart, Loader2, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users } from "lucide-react";
+import { BookHeart, Heart, Loader2, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [goalCategory, setGoalCategory] = useState("savings");
 
   const lifeGoals = useQuery(api.lifeGoals.getUserLifeGoals);
+  const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 5 });
   const createMoodEntry = useMutation(api.moodJournals.createMoodEntry);
   const createLifeGoal = useMutation(api.lifeGoals.createLifeGoal);
 
@@ -113,6 +114,21 @@ export default function Dashboard() {
       adventure_investor: "The Adventure Investor",
     };
     return archetype ? names[archetype] : "Explorer";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
   };
 
   if (authLoading || !user) {
@@ -265,12 +281,12 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          {/* Money Mood Journal */}
+          {/* Money Mood Journal - Enhanced */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="md:col-span-2"
+            className="md:col-span-2 lg:col-span-2"
           >
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
               <CardHeader>
@@ -278,31 +294,100 @@ export default function Dashboard() {
                   <BookHeart className="text-purple-500" />
                   Money Mood Journal
                 </CardTitle>
-                <CardDescription>How are you feeling about money today?</CardDescription>
+                <CardDescription>Track your financial emotions and build awareness</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2 justify-center">
-                  {moods.map((mood) => (
-                    <Button
-                      key={mood.value}
-                      variant={selectedMood === mood.value ? "default" : "outline"}
-                      size="lg"
-                      onClick={() => setSelectedMood(mood.value)}
-                      className="text-2xl"
+              <CardContent className="space-y-6">
+                {/* Current Mood Entry */}
+                <div className="space-y-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">How are you feeling about money today?</h4>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex gap-2 justify-center flex-wrap">
+                    {moods.map((mood) => (
+                      <Button
+                        key={mood.value}
+                        variant={selectedMood === mood.value ? "default" : "outline"}
+                        size="lg"
+                        onClick={() => setSelectedMood(mood.value)}
+                        className={`text-2xl transition-all ${
+                          selectedMood === mood.value ? "scale-110 shadow-lg" : "hover:scale-105"
+                        }`}
+                      >
+                        {mood.emoji}
+                      </Button>
+                    ))}
+                  </div>
+                  {selectedMood && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-3"
                     >
-                      {mood.emoji}
-                    </Button>
-                  ))}
+                      <p className="text-sm text-center font-medium">
+                        You're feeling {moods.find((m) => m.value === selectedMood)?.label.toLowerCase()} about money
+                      </p>
+                      <Textarea
+                        placeholder="What's on your mind? Share your thoughts... (optional)"
+                        value={journalNote}
+                        onChange={(e) => setJournalNote(e.target.value)}
+                        rows={3}
+                        className="resize-none"
+                      />
+                      <Button onClick={handleSaveMood} className="w-full">
+                        <BookHeart className="mr-2 h-4 w-4" />
+                        Save Today's Mood
+                      </Button>
+                    </motion.div>
+                  )}
                 </div>
-                <Textarea
-                  placeholder="What's on your mind? (optional)"
-                  value={journalNote}
-                  onChange={(e) => setJournalNote(e.target.value)}
-                  rows={3}
-                />
-                <Button onClick={handleSaveMood} className="w-full">
-                  Save Today's Mood
-                </Button>
+
+                {/* Recent Mood History */}
+                {moodJournals && moodJournals.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-purple-500" />
+                      Recent Entries
+                    </h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {moodJournals.map((entry, index) => (
+                        <motion.div
+                          key={entry._id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                        >
+                          <span className="text-2xl">{entry.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-sm">{entry.mood}</span>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {formatDate(entry.date)}
+                              </span>
+                            </div>
+                            {entry.note && (
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {entry.note}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mood Insights */}
+                {moodJournals && moodJournals.length > 0 && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-900 dark:text-blue-100">
+                      <Sparkles className="inline h-4 w-4 mr-1" />
+                      <strong>Insight:</strong> You've logged {moodJournals.length} mood{moodJournals.length > 1 ? "s" : ""} recently. 
+                      Tracking your financial emotions helps build awareness and peace. Keep it up! 💚
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
