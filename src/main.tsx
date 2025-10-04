@@ -4,9 +4,9 @@ import { InstrumentationProvider } from "@/instrumentation.tsx";
 import AuthPage from "@/pages/Auth.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
-import { StrictMode, useEffect } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import "./index.css";
 import Landing from "./pages/Landing.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -16,52 +16,60 @@ import Investments from "./pages/Investments.tsx";
 import Community from "./pages/Community.tsx";
 import Calculators from "./pages/Calculators.tsx";
 import Profile from "./pages/Profile.tsx";
+import Pricing from "./pages/Pricing.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-function RouteSyncer() {
-  const location = useLocation();
-  useEffect(() => {
-    window.parent.postMessage(
-      { type: "iframe-route-change", path: location.pathname },
-      "*",
-    );
-  }, [location.pathname]);
-
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (event.data?.type === "navigate") {
-        if (event.data.direction === "back") window.history.back();
-        if (event.data.direction === "forward") window.history.forward();
-      }
-    }
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
-
-  return null;
-}
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/auth",
+    element: <AuthPage redirectAfterAuth="/soul-scan" />,
+  },
+  {
+    path: "/soul-scan",
+    element: <SoulScanQuiz />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
+  },
+  {
+    path: "/investments",
+    element: <Investments />,
+  },
+  {
+    path: "/community",
+    element: <Community />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
+  },
+  {
+    path: "/pricing",
+    element: <Pricing />,
+  },
+  {
+    path: "/calculators",
+    element: <Calculators />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <RouteSyncer />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/soul-scan" />} />
-            <Route path="/soul-scan" element={<SoulScanQuiz />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/investments" element={<Investments />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/calculators" element={<Calculators />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <RouterProvider router={router} />
         <Toaster />
       </ConvexAuthProvider>
     </InstrumentationProvider>

@@ -14,6 +14,7 @@ import { ArrowLeft, Loader2, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { ProfileDropdown } from "@/components/ProfileDropdown";
 
 export default function Community() {
   const navigate = useNavigate();
@@ -85,8 +86,8 @@ export default function Community() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Community Hub</h1>
-          <div className="w-24" />
+          <h1 className="text-xl font-bold">Community Circles</h1>
+          <ProfileDropdown />
         </div>
       </header>
 

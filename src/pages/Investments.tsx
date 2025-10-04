@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink, Heart, Leaf, Loader2, Shield, TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { ProfileDropdown } from "@/components/ProfileDropdown";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -43,8 +44,8 @@ export default function Investments() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Soul Investments</h1>
-          <div className="w-24" />
+          <h1 className="text-xl font-bold">Investments</h1>
+          <ProfileDropdown />
         </div>
       </header>
 

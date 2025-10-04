@@ -8,6 +8,7 @@ import { ArrowLeft, Calculator } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ProfileDropdown } from "@/components/ProfileDropdown";
 
 export default function Calculators() {
   const navigate = useNavigate();
@@ -383,7 +384,7 @@ export default function Calculators() {
             Back to Dashboard
           </Button>
           <h1 className="text-xl font-bold">Financial Calculators</h1>
-          <div className="w-24" />
+          <ProfileDropdown />
         </div>
       </header>
 
