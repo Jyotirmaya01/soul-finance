@@ -10,7 +10,7 @@ import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import * as confetti from "canvas-confetti";
+import confetti from "canvas-confetti";
 
 const quizSections = [
   {
