@@ -1,0 +1,59 @@
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { getCurrentUser } from "./users";
+
+export const updateProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    currency: v.optional(v.string()),
+    newsletterSubscribed: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const updates: Record<string, any> = {};
+    if (args.name !== undefined) updates.name = args.name;
+    if (args.bio !== undefined) updates.bio = args.bio;
+    if (args.currency !== undefined) updates.currency = args.currency;
+    if (args.newsletterSubscribed !== undefined) updates.newsletterSubscribed = args.newsletterSubscribed;
+
+    await ctx.db.patch(user._id, updates);
+
+    return { success: true };
+  },
+});
+
+export const upgradeToPremium = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    await ctx.db.patch(user._id, { isPremium: true });
+
+    return { success: true };
+  },
+});
+
+export const getProfile = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      bio: user.bio,
+      profilePhoto: user.profilePhoto,
+      currency: user.currency || "USD",
+      isPremium: user.isPremium || false,
+      newsletterSubscribed: user.newsletterSubscribed || false,
+      archetype: user.archetype,
+      peaceMeter: user.peaceMeter,
+    };
+  },
+});

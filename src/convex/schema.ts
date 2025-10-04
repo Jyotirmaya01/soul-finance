@@ -50,6 +50,13 @@ const schema = defineSchema(
       hasCompletedQuiz: v.optional(v.boolean()),
       dashboardTheme: v.optional(v.string()),
       topValues: v.optional(v.array(v.string())),
+      
+      // New profile fields
+      profilePhoto: v.optional(v.string()),
+      bio: v.optional(v.string()),
+      currency: v.optional(v.string()),
+      isPremium: v.optional(v.boolean()),
+      newsletterSubscribed: v.optional(v.boolean()),
     }).index("email", ["email"]),
 
     soulScans: defineTable({
@@ -92,6 +99,7 @@ const schema = defineSchema(
       memberCount: v.number(),
       isPublic: v.boolean(),
       tags: v.array(v.string()),
+      communityType: v.string(),
     }).index("by_creator", ["creatorId"]),
 
     circleMembers: defineTable({
@@ -136,6 +144,12 @@ const schema = defineSchema(
       affiliateLink: v.optional(v.string()),
       isPremium: v.boolean(),
     }).index("by_category", ["category"]),
+
+    newsletters: defineTable({
+      email: v.string(),
+      subscribedAt: v.number(),
+      isActive: v.boolean(),
+    }).index("by_email", ["email"]),
   },
   {
     schemaValidation: false,

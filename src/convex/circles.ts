@@ -8,6 +8,7 @@ export const createCircle = mutation({
     description: v.string(),
     isPublic: v.boolean(),
     tags: v.array(v.string()),
+    communityType: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -66,6 +67,31 @@ export const getPublicCircles = query({
       .query("circles")
       .filter((q) => q.eq(q.field("isPublic"), true))
       .take(20);
+  },
+});
+
+export const searchCircles = query({
+  args: { searchTerm: v.optional(v.string()), communityType: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    let circles = await ctx.db
+      .query("circles")
+      .filter((q) => q.eq(q.field("isPublic"), true))
+      .collect();
+
+    if (args.communityType && args.communityType !== "all") {
+      circles = circles.filter((c) => c.communityType === args.communityType);
+    }
+
+    if (args.searchTerm) {
+      const term = args.searchTerm.toLowerCase();
+      circles = circles.filter(
+        (c) =>
+          c.name.toLowerCase().includes(term) ||
+          c.description.toLowerCase().includes(term)
+      );
+    }
+
+    return circles.slice(0, 20);
   },
 });
 
