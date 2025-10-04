@@ -45,8 +45,169 @@ export default function Calculators() {
   const [mfYears, setMfYears] = useState(10);
   const [mfType, setMfType] = useState<"lumpsum" | "sip">("lumpsum");
   
+  // Validation helper functions
+  const validatePositiveNumber = (value: number, min: number = 0) => {
+    return !isNaN(value) && value > min;
+  };
+
+  const validateAge = (age: number) => {
+    return !isNaN(age) && age >= 18 && age <= 100;
+  };
+
+  const validateRate = (rate: number) => {
+    return !isNaN(rate) && rate >= 0 && rate <= 100;
+  };
+
+  const validateYears = (years: number) => {
+    return !isNaN(years) && years > 0 && years <= 50;
+  };
+
+  // Input handlers with validation
+  const handleSipMonthlyChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 10000000)) {
+      setSipMonthly(num);
+    }
+  };
+
+  const handleSipRateChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateRate(num)) {
+      setSipRate(num);
+    }
+  };
+
+  const handleSipYearsChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateYears(num)) {
+      setSipYears(num);
+    }
+  };
+
+  const handleFdPrincipalChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 100000000)) {
+      setFdPrincipal(num);
+    }
+  };
+
+  const handleFdRateChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateRate(num)) {
+      setFdRate(num);
+    }
+  };
+
+  const handleFdYearsChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateYears(num)) {
+      setFdYears(num);
+    }
+  };
+
+  const handleLoanAmountChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 1000000000)) {
+      setLoanAmount(num);
+    }
+  };
+
+  const handleLoanRateChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateRate(num)) {
+      setLoanRate(num);
+    }
+  };
+
+  const handleLoanYearsChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateYears(num)) {
+      setLoanYears(num);
+    }
+  };
+
+  const handleCurrentAgeChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateAge(num)) {
+      setCurrentAge(num);
+    }
+  };
+
+  const handleRetirementAgeChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validateAge(num) && num > currentAge)) {
+      setRetirementAge(num);
+    }
+  };
+
+  const handleMonthlyExpenseChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 10000000)) {
+      setMonthlyExpense(num);
+    }
+  };
+
+  const handleInflationChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validateRate(num) && num <= 50)) {
+      setInflation(num);
+    }
+  };
+
+  const handleSwpCorpusChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 10000000000)) {
+      setSwpCorpus(num);
+    }
+  };
+
+  const handleSwpWithdrawalChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 10000000)) {
+      setSwpWithdrawal(num);
+    }
+  };
+
+  const handleSwpRateChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateRate(num)) {
+      setSwpRate(num);
+    }
+  };
+
+  const handleSwpYearsChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateYears(num)) {
+      setSwpYears(num);
+    }
+  };
+
+  const handleMfInvestmentChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || (validatePositiveNumber(num, 0) && num <= 100000000)) {
+      setMfInvestment(num);
+    }
+  };
+
+  const handleMfRateChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateRate(num)) {
+      setMfRate(num);
+    }
+  };
+
+  const handleMfYearsChange = (value: string) => {
+    const num = Number(value);
+    if (value === "" || validateYears(num)) {
+      setMfYears(num);
+    }
+  };
+  
   // SIP Calculation with yearly breakdown
   const calculateSIP = () => {
+    if (!validatePositiveNumber(sipMonthly, 0) || !validateRate(sipRate) || !validateYears(sipYears)) {
+      return { futureValue: 0, invested: 0, returns: 0, yearlyData: [] };
+    }
     const monthlyRate = sipRate / 12 / 100;
     const months = sipYears * 12;
     const futureValue = sipMonthly * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
@@ -72,6 +233,9 @@ export default function Calculators() {
   
   // FD Calculation
   const calculateFD = () => {
+    if (!validatePositiveNumber(fdPrincipal, 0) || !validateRate(fdRate) || !validateYears(fdYears)) {
+      return { maturityAmount: 0, interest: 0 };
+    }
     const amount = fdPrincipal * Math.pow(1 + fdRate / 100, fdYears);
     const interest = amount - fdPrincipal;
     return { maturityAmount: amount, interest };
@@ -79,6 +243,9 @@ export default function Calculators() {
   
   // EMI Calculation
   const calculateEMI = () => {
+    if (!validatePositiveNumber(loanAmount, 0) || !validateRate(loanRate) || !validateYears(loanYears)) {
+      return { emi: 0, totalAmount: 0, totalInterest: 0 };
+    }
     const monthlyRate = loanRate / 12 / 100;
     const months = loanYears * 12;
     const emi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
@@ -89,6 +256,10 @@ export default function Calculators() {
   
   // Retirement Calculation with detailed breakdown
   const calculateRetirement = () => {
+    if (!validateAge(currentAge) || !validateAge(retirementAge) || retirementAge <= currentAge || 
+        !validatePositiveNumber(monthlyExpense, 0) || !validateRate(inflation)) {
+      return { corpusNeeded: 0, futureExpense: 0, sipNeeded: 0, ageData: [] };
+    }
     const yearsToRetirement = retirementAge - currentAge;
     const futureExpense = monthlyExpense * Math.pow(1 + inflation / 100, yearsToRetirement);
     const yearsInRetirement = 25;
@@ -115,6 +286,10 @@ export default function Calculators() {
   
   // SWP Calculation
   const calculateSWP = () => {
+    if (!validatePositiveNumber(swpCorpus, 0) || !validatePositiveNumber(swpWithdrawal, 0) || 
+        !validateRate(swpRate) || !validateYears(swpYears)) {
+      return { finalBalance: 0, totalWithdrawn: 0, yearlyData: [] };
+    }
     const monthlyRate = swpRate / 12 / 100;
     let balance = swpCorpus;
     let totalWithdrawn = 0;
@@ -142,6 +317,9 @@ export default function Calculators() {
   
   // Mutual Fund Calculation
   const calculateMutualFund = () => {
+    if (!validatePositiveNumber(mfInvestment, 0) || !validateRate(mfRate) || !validateYears(mfYears)) {
+      return { futureValue: 0, invested: 0, returns: 0, yearlyData: [] };
+    }
     if (mfType === "lumpsum") {
       const futureValue = mfInvestment * Math.pow(1 + mfRate / 100, mfYears);
       const returns = futureValue - mfInvestment;
@@ -248,25 +426,38 @@ export default function Calculators() {
                       <Label>Monthly Investment (₹)</Label>
                       <Input
                         type="number"
-                        value={sipMonthly}
-                        onChange={(e) => setSipMonthly(Number(e.target.value))}
+                        value={sipMonthly || ""}
+                        onChange={(e) => handleSipMonthlyChange(e.target.value)}
+                        min="1"
+                        max="10000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹1,00,00,000</p>
                     </div>
                     <div>
                       <Label>Expected Return Rate (% p.a.)</Label>
                       <Input
                         type="number"
-                        value={sipRate}
-                        onChange={(e) => setSipRate(Number(e.target.value))}
+                        value={sipRate || ""}
+                        onChange={(e) => handleSipRateChange(e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 100%</p>
                     </div>
                     <div>
                       <Label>Time Period (Years)</Label>
                       <Input
                         type="number"
-                        value={sipYears}
-                        onChange={(e) => setSipYears(Number(e.target.value))}
+                        value={sipYears || ""}
+                        onChange={(e) => handleSipYearsChange(e.target.value)}
+                        min="1"
+                        max="50"
+                        placeholder="Enter years"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 1 - 50 years</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -286,20 +477,22 @@ export default function Calculators() {
                 </div>
                 
                 {/* Chart */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Growth Projection</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={sipResult.yearlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Line type="monotone" dataKey="invested" stroke="#8884d8" name="Invested Amount" />
-                      <Line type="monotone" dataKey="value" stroke="#82ca9d" name="Future Value" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {sipResult.yearlyData.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Growth Projection</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={sipResult.yearlyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Legend />
+                        <Line type="monotone" dataKey="invested" stroke="#8884d8" name="Invested Amount" />
+                        <Line type="monotone" dataKey="value" stroke="#82ca9d" name="Future Value" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -318,25 +511,38 @@ export default function Calculators() {
                       <Label>Principal Amount (₹)</Label>
                       <Input
                         type="number"
-                        value={fdPrincipal}
-                        onChange={(e) => setFdPrincipal(Number(e.target.value))}
+                        value={fdPrincipal || ""}
+                        onChange={(e) => handleFdPrincipalChange(e.target.value)}
+                        min="1"
+                        max="100000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹10,00,00,000</p>
                     </div>
                     <div>
                       <Label>Interest Rate (% p.a.)</Label>
                       <Input
                         type="number"
-                        value={fdRate}
-                        onChange={(e) => setFdRate(Number(e.target.value))}
+                        value={fdRate || ""}
+                        onChange={(e) => handleFdRateChange(e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 100%</p>
                     </div>
                     <div>
                       <Label>Time Period (Years)</Label>
                       <Input
                         type="number"
-                        value={fdYears}
-                        onChange={(e) => setFdYears(Number(e.target.value))}
+                        value={fdYears || ""}
+                        onChange={(e) => handleFdYearsChange(e.target.value)}
+                        min="1"
+                        max="50"
+                        placeholder="Enter years"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 1 - 50 years</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -372,25 +578,38 @@ export default function Calculators() {
                       <Label>Loan Amount (₹)</Label>
                       <Input
                         type="number"
-                        value={loanAmount}
-                        onChange={(e) => setLoanAmount(Number(e.target.value))}
+                        value={loanAmount || ""}
+                        onChange={(e) => handleLoanAmountChange(e.target.value)}
+                        min="1"
+                        max="1000000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹100,00,00,000</p>
                     </div>
                     <div>
                       <Label>Interest Rate (% p.a.)</Label>
                       <Input
                         type="number"
-                        value={loanRate}
-                        onChange={(e) => setLoanRate(Number(e.target.value))}
+                        value={loanRate || ""}
+                        onChange={(e) => handleLoanRateChange(e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 100%</p>
                     </div>
                     <div>
                       <Label>Loan Tenure (Years)</Label>
                       <Input
                         type="number"
-                        value={loanYears}
-                        onChange={(e) => setLoanYears(Number(e.target.value))}
+                        value={loanYears || ""}
+                        onChange={(e) => handleLoanYearsChange(e.target.value)}
+                        min="1"
+                        max="50"
+                        placeholder="Enter years"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 1 - 50 years</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -426,33 +645,50 @@ export default function Calculators() {
                       <Label>Current Age</Label>
                       <Input
                         type="number"
-                        value={currentAge}
-                        onChange={(e) => setCurrentAge(Number(e.target.value))}
+                        value={currentAge || ""}
+                        onChange={(e) => handleCurrentAgeChange(e.target.value)}
+                        min="18"
+                        max="100"
+                        placeholder="Enter age"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 18 - 100 years</p>
                     </div>
                     <div>
                       <Label>Retirement Age</Label>
                       <Input
                         type="number"
-                        value={retirementAge}
-                        onChange={(e) => setRetirementAge(Number(e.target.value))}
+                        value={retirementAge || ""}
+                        onChange={(e) => handleRetirementAgeChange(e.target.value)}
+                        min={currentAge + 1}
+                        max="100"
+                        placeholder="Enter age"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Must be greater than current age</p>
                     </div>
                     <div>
                       <Label>Current Monthly Expense (₹)</Label>
                       <Input
                         type="number"
-                        value={monthlyExpense}
-                        onChange={(e) => setMonthlyExpense(Number(e.target.value))}
+                        value={monthlyExpense || ""}
+                        onChange={(e) => handleMonthlyExpenseChange(e.target.value)}
+                        min="1"
+                        max="10000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹1,00,00,000</p>
                     </div>
                     <div>
                       <Label>Expected Inflation (%)</Label>
                       <Input
                         type="number"
-                        value={inflation}
-                        onChange={(e) => setInflation(Number(e.target.value))}
+                        value={inflation || ""}
+                        onChange={(e) => handleInflationChange(e.target.value)}
+                        min="0"
+                        max="50"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 50%</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -476,19 +712,21 @@ export default function Calculators() {
                 </div>
                 
                 {/* Age-wise expense chart */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Expense Projection by Age</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={retirementResult.ageData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="age" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Bar dataKey="monthlyExpense" fill="#8884d8" name="Monthly Expense" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {retirementResult.ageData.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Expense Projection by Age</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={retirementResult.ageData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="age" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Legend />
+                        <Bar dataKey="monthlyExpense" fill="#8884d8" name="Monthly Expense" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -507,33 +745,50 @@ export default function Calculators() {
                       <Label>Total Corpus (₹)</Label>
                       <Input
                         type="number"
-                        value={swpCorpus}
-                        onChange={(e) => setSwpCorpus(Number(e.target.value))}
+                        value={swpCorpus || ""}
+                        onChange={(e) => handleSwpCorpusChange(e.target.value)}
+                        min="1"
+                        max="10000000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹1,000,00,00,000</p>
                     </div>
                     <div>
                       <Label>Monthly Withdrawal (₹)</Label>
                       <Input
                         type="number"
-                        value={swpWithdrawal}
-                        onChange={(e) => setSwpWithdrawal(Number(e.target.value))}
+                        value={swpWithdrawal || ""}
+                        onChange={(e) => handleSwpWithdrawalChange(e.target.value)}
+                        min="1"
+                        max="10000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹1,00,00,000</p>
                     </div>
                     <div>
                       <Label>Expected Return Rate (% p.a.)</Label>
                       <Input
                         type="number"
-                        value={swpRate}
-                        onChange={(e) => setSwpRate(Number(e.target.value))}
+                        value={swpRate || ""}
+                        onChange={(e) => handleSwpRateChange(e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 100%</p>
                     </div>
                     <div>
                       <Label>Withdrawal Period (Years)</Label>
                       <Input
                         type="number"
-                        value={swpYears}
-                        onChange={(e) => setSwpYears(Number(e.target.value))}
+                        value={swpYears || ""}
+                        onChange={(e) => handleSwpYearsChange(e.target.value)}
+                        min="1"
+                        max="50"
+                        placeholder="Enter years"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 1 - 50 years</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -553,20 +808,22 @@ export default function Calculators() {
                 </div>
                 
                 {/* SWP Chart */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Balance Over Time</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={swpResult.yearlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Line type="monotone" dataKey="balance" stroke="#14b8a6" name="Remaining Balance" />
-                      <Line type="monotone" dataKey="withdrawn" stroke="#f97316" name="Total Withdrawn" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {swpResult.yearlyData.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Balance Over Time</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={swpResult.yearlyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Legend />
+                        <Line type="monotone" dataKey="balance" stroke="#14b8a6" name="Remaining Balance" />
+                        <Line type="monotone" dataKey="withdrawn" stroke="#f97316" name="Total Withdrawn" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -604,25 +861,38 @@ export default function Calculators() {
                       <Label>{mfType === "lumpsum" ? "Investment Amount (₹)" : "Monthly Investment (₹)"}</Label>
                       <Input
                         type="number"
-                        value={mfInvestment}
-                        onChange={(e) => setMfInvestment(Number(e.target.value))}
+                        value={mfInvestment || ""}
+                        onChange={(e) => handleMfInvestmentChange(e.target.value)}
+                        min="1"
+                        max="100000000"
+                        placeholder="Enter amount"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Min: ₹1, Max: ₹10,00,00,000</p>
                     </div>
                     <div>
                       <Label>Expected Return Rate (% p.a.)</Label>
                       <Input
                         type="number"
-                        value={mfRate}
-                        onChange={(e) => setMfRate(Number(e.target.value))}
+                        value={mfRate || ""}
+                        onChange={(e) => handleMfRateChange(e.target.value)}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter rate"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 0% - 100%</p>
                     </div>
                     <div>
                       <Label>Investment Period (Years)</Label>
                       <Input
                         type="number"
-                        value={mfYears}
-                        onChange={(e) => setMfYears(Number(e.target.value))}
+                        value={mfYears || ""}
+                        onChange={(e) => handleMfYearsChange(e.target.value)}
+                        min="1"
+                        max="50"
+                        placeholder="Enter years"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Range: 1 - 50 years</p>
                     </div>
                   </div>
                   <div className="space-y-4 p-6 bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
@@ -642,20 +912,22 @@ export default function Calculators() {
                 </div>
                 
                 {/* Mutual Fund Chart */}
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Investment Growth</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={mfResult.yearlyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                      <Legend />
-                      <Line type="monotone" dataKey="invested" stroke="#8b5cf6" name="Invested Amount" />
-                      <Line type="monotone" dataKey="value" stroke="#d946ef" name="Future Value" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                {mfResult.yearlyData.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Investment Growth</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={mfResult.yearlyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Legend />
+                        <Line type="monotone" dataKey="invested" stroke="#8b5cf6" name="Invested Amount" />
+                        <Line type="monotone" dataKey="value" stroke="#d946ef" name="Future Value" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
