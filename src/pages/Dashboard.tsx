@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { AIChatDialog } from "@/components/AIChatDialog";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [journalNote, setJournalNote] = useState("");
   const [selectedMood, setSelectedMood] = useState("");
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [goalTitle, setGoalTitle] = useState("");
   const [goalAmount, setGoalAmount] = useState("");
   const [goalCurrentAmount, setGoalCurrentAmount] = useState("");
@@ -389,7 +391,7 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          {/* AI Coach */}
+          {/* AI Coach - Updated */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -407,7 +409,7 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground mb-4">
                   "Remember, every small step counts. You're doing great! 💚"
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => setIsChatOpen(true)}>
                   Chat Now
                 </Button>
               </CardContent>
@@ -489,6 +491,9 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Chat Dialog */}
+      <AIChatDialog open={isChatOpen} onOpenChange={setIsChatOpen} />
     </div>
   );
 }

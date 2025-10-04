@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as aiChat from "../aiChat.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as circles from "../circles.js";
@@ -35,6 +36,7 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  aiChat: typeof aiChat;
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   circles: typeof circles;
