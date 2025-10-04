@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 const quizSections = [
   {
@@ -156,8 +157,6 @@ export default function SoulScanQuiz() {
           spendingTriggers: answers.spendingTriggers || [],
         }
       });
-      
-      const confetti = (await import("canvas-confetti" as any)).default as any;
       
       confetti({
         particleCount: 100,
