@@ -17,8 +17,9 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { isLoading: authLoading, isAuthenticated, user } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
   const profile = useQuery(api.profile.getProfile);
+  const isProfileLoading = profile === undefined;
   const updateProfile = useMutation(api.profile.updateProfile);
 
   const [name, setName] = useState("");
@@ -113,14 +114,19 @@ export default function Profile() {
       .slice(0, 2);
   };
 
-  if (authLoading || !user || !profile) {
+  if (authLoading || isProfileLoading) {
     return <LoadingScreen message="Loading your profile..." />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50"
+      >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -129,16 +135,25 @@ export default function Profile() {
           <h1 className="text-xl font-bold">Profile & Settings</h1>
           <div className="w-32" />
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="mb-8"
         >
-          {/* Profile Picture Section */}
+          <h2 className="text-3xl font-bold tracking-tight mb-2">Profile Settings</h2>
+          <p className="text-muted-foreground">Manage your account and preferences</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
           <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
             <CardHeader>
               <CardTitle>Profile Picture</CardTitle>
@@ -198,7 +213,7 @@ export default function Profile() {
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
-                    value={profile.email || ""}
+                    value={profile?.email || ""}
                     disabled
                     className="bg-muted cursor-not-allowed"
                   />
@@ -275,67 +290,74 @@ export default function Profile() {
           </Card>
 
           {/* Premium Upgrade Section */}
-          {!profile.isPremium && (
-            <Card className="backdrop-blur-sm bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="text-yellow-500" />
-                  Upgrade to Premium
-                </CardTitle>
-                <CardDescription>Unlock exclusive features and benefits</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Exclusive Investment Recommendations</p>
-                      <p className="text-sm text-muted-foreground">
-                        Get personalized premium investment opportunities
-                      </p>
+          {!profile?.isPremium && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              whileHover={{ scale: 1.01 }}
+            >
+              <Card className="backdrop-blur-sm bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-300 dark:border-purple-700 mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="text-yellow-500" />
+                    Upgrade to Premium
+                  </CardTitle>
+                  <CardDescription>Unlock exclusive features and benefits</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Exclusive Investment Recommendations</p>
+                        <p className="text-sm text-muted-foreground">
+                          Get personalized premium investment opportunities
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Daily Finance News</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receive curated financial insights via email
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Priority Support</p>
+                        <p className="text-sm text-muted-foreground">
+                          Get faster responses from our support team
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Advanced Analytics</p>
+                        <p className="text-sm text-muted-foreground">
+                          Deep insights into your financial journey
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Daily Finance News</p>
-                      <p className="text-sm text-muted-foreground">
-                        Receive curated financial insights via email
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Priority Support</p>
-                      <p className="text-sm text-muted-foreground">
-                        Get faster responses from our support team
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-500 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Advanced Analytics</p>
-                      <p className="text-sm text-muted-foreground">
-                        Deep insights into your financial journey
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Button onClick={() => navigate("/pricing")} className="w-full" size="lg">
-                  <Crown className="mr-2 h-5 w-5" />
-                  View Premium Plans
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  Cancel anytime • 30-day money-back guarantee
-                </p>
-              </CardContent>
-            </Card>
+                  <Button onClick={() => navigate("/pricing")} className="w-full" size="lg">
+                    <Crown className="mr-2 h-5 w-5" />
+                    View Premium Plans
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Cancel anytime • 30-day money-back guarantee
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
           )}
 
           {/* Premium Badge */}
-          {profile.isPremium && (
+          {profile?.isPremium && (
             <Card className="backdrop-blur-sm bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-800">
               <CardContent className="py-6">
                 <div className="flex items-center justify-center gap-3">
