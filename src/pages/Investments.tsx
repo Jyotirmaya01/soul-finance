@@ -6,17 +6,19 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart, Leaf, Shield, TrendingUp, TrendingDown, Plus, Trash2, DollarSign, PieChart, BarChart3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { toast } from "sonner";
 import type { Id } from "@/convex/_generated/dataModel";
+import { PieChart as RechartsPie, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -117,6 +119,72 @@ export default function Investments() {
       toast.error("Failed to remove investment. Please try again.");
     }
   };
+
+  // Add chart data calculations
+  const chartData = useMemo(() => {
+    if (!portfolio || portfolio.length === 0) {
+      return {
+        allocationData: [],
+        performanceData: [],
+        individualPerformanceData: [],
+      };
+    }
+
+    // Portfolio Allocation Data (Pie Chart)
+    const allocationData = portfolio.map((item) => ({
+      name: item.investmentName,
+      value: item.amountInvested,
+      currentValue: item.currentValue,
+    }));
+
+    // Individual Performance Data (Bar Chart)
+    const individualPerformanceData = portfolio.map((item) => {
+      const gainLoss = item.currentValue - item.amountInvested;
+      const percentChange = item.amountInvested > 0 ? (gainLoss / item.amountInvested) * 100 : 0;
+      
+      return {
+        name: item.investmentName.length > 15 
+          ? item.investmentName.substring(0, 15) + "..." 
+          : item.investmentName,
+        gainLoss: parseFloat(gainLoss.toFixed(2)),
+        percentChange: parseFloat(percentChange.toFixed(2)),
+        fill: gainLoss >= 0 ? "#10b981" : "#ef4444",
+      };
+    }).sort((a, b) => b.gainLoss - a.gainLoss);
+
+    // Performance Over Time Data (Line Chart)
+    // Since we don't have historical data yet, we'll create a simple projection
+    const performanceData = portfolio.map((item) => {
+      const date = new Date(item.purchaseDate);
+      return {
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        invested: item.amountInvested,
+        current: item.currentValue,
+        timestamp: date.getTime(),
+      };
+    }).sort((a, b) => a.timestamp - b.timestamp);
+
+    // Aggregate cumulative values
+    let cumulativeInvested = 0;
+    let cumulativeCurrent = 0;
+    const aggregatedPerformance = performanceData.map((item) => {
+      cumulativeInvested += item.invested;
+      cumulativeCurrent += item.current;
+      return {
+        date: item.date,
+        invested: parseFloat(cumulativeInvested.toFixed(2)),
+        current: parseFloat(cumulativeCurrent.toFixed(2)),
+      };
+    });
+
+    return {
+      allocationData,
+      performanceData: aggregatedPerformance,
+      individualPerformanceData,
+    };
+  }, [portfolio]);
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
   if (authLoading) {
     return <LoadingScreen message="Finding investments for you..." />;
@@ -330,6 +398,167 @@ export default function Investments() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Performance Charts Section */}
+              {portfolio && portfolio.length > 0 && (
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold">Portfolio Performance</h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Portfolio Allocation Pie Chart */}
+                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                      <CardHeader>
+                        <CardTitle>Portfolio Allocation</CardTitle>
+                        <CardDescription>Distribution of investments by amount invested</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={chartData.allocationData.reduce((acc, item, index) => ({
+                            ...acc,
+                            [item.name]: {
+                              label: item.name,
+                              color: COLORS[index % COLORS.length],
+                            },
+                          }), {})}
+                          className="h-[300px]"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RechartsPie>
+                              <Pie
+                                data={chartData.allocationData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                              >
+                                {chartData.allocationData.map((_, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                            </RechartsPie>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+
+                    {/* Individual Investment Performance Bar Chart */}
+                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                      <CardHeader>
+                        <CardTitle>Investment Performance</CardTitle>
+                        <CardDescription>Gain/Loss comparison across investments</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={{
+                            gainLoss: {
+                              label: "Gain/Loss",
+                              color: "#10b981",
+                            },
+                          }}
+                          className="h-[300px]"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData.individualPerformanceData}>
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                              <XAxis 
+                                dataKey="name" 
+                                className="text-xs"
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                              />
+                              <YAxis className="text-xs" />
+                              <ChartTooltip 
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length > 0 && payload[0] && payload[0].payload) {
+                                    const data = payload[0].payload;
+                                    return (
+                                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                                        <div className="grid gap-2">
+                                          <div className="font-medium">{data.name}</div>
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="text-muted-foreground">Gain/Loss:</span>
+                                            <span className={`font-bold ${data.gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                              ${data.gainLoss}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="text-muted-foreground">Change:</span>
+                                            <span className={`font-bold ${data.percentChange >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                              {data.percentChange >= 0 ? "+" : ""}{data.percentChange}%
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                              <Bar dataKey="gainLoss" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Performance Over Time Line Chart */}
+                  {chartData.performanceData.length > 0 && (
+                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                      <CardHeader>
+                        <CardTitle>Portfolio Value Over Time</CardTitle>
+                        <CardDescription>Cumulative invested amount vs current value</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ChartContainer
+                          config={{
+                            invested: {
+                              label: "Invested",
+                              color: "#3b82f6",
+                            },
+                            current: {
+                              label: "Current Value",
+                              color: "#10b981",
+                            },
+                          }}
+                          className="h-[300px]"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData.performanceData}>
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                              <XAxis dataKey="date" className="text-xs" />
+                              <YAxis className="text-xs" />
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                              <Legend />
+                              <Line 
+                                type="monotone" 
+                                dataKey="invested" 
+                                stroke="#3b82f6" 
+                                strokeWidth={2}
+                                dot={{ fill: "#3b82f6" }}
+                                name="Invested"
+                              />
+                              <Line 
+                                type="monotone" 
+                                dataKey="current" 
+                                stroke="#10b981" 
+                                strokeWidth={2}
+                                dot={{ fill: "#10b981" }}
+                                name="Current Value"
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
 
               {/* Portfolio Holdings */}
               <div>
