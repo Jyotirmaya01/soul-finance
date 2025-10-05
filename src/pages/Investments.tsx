@@ -11,7 +11,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Heart, Leaf, Shield, TrendingUp, TrendingDown, Plus, Trash2, DollarSign, PieChart, BarChart3 } from "lucide-react";
+import { ArrowLeft, Heart, Leaf, Shield, TrendingUp, TrendingDown, Plus, Trash2, DollarSign, PieChart, BarChart3, Sparkles, Target, Award, BookOpen, Filter } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
@@ -36,12 +36,49 @@ export default function Investments() {
   const [quantity, setQuantity] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Calculate investment stats
+  const investmentStats = useMemo(() => {
+    if (!investments || investments.length === 0) {
+      return {
+        totalCount: 0,
+        categories: [],
+        avgESGScore: 0,
+        minInvestmentRange: { min: 0, max: 0 },
+      };
+    }
+
+    const categories = [...new Set(investments.map(inv => inv.category))];
+    const avgESGScore = Math.round(
+      investments.reduce((sum, inv) => sum + inv.esgScore, 0) / investments.length
+    );
+    const minInvestments = investments.map(inv => inv.minInvestment);
+    const minInvestmentRange = {
+      min: Math.min(...minInvestments),
+      max: Math.max(...minInvestments),
+    };
+
+    return {
+      totalCount: investments.length,
+      categories,
+      avgESGScore,
+      minInvestmentRange,
+    };
+  }, [investments]);
+
+  // Filter investments by category
+  const filteredInvestments = useMemo(() => {
+    if (!investments) return [];
+    if (!selectedCategory) return investments;
+    return investments.filter(inv => inv.category === selectedCategory);
+  }, [investments, selectedCategory]);
 
   const getRiskColor = (risk: string) => {
     if (risk === "Low") return "text-green-600 bg-green-100 dark:bg-green-900/30";
@@ -71,7 +108,6 @@ export default function Investments() {
       return;
     }
 
-    // Validate quantity if provided
     if (quantity && quantity.trim() !== "") {
       const quantityNum = parseFloat(quantity);
       if (isNaN(quantityNum) || quantityNum <= 0) {
@@ -95,7 +131,6 @@ export default function Investments() {
       setQuantity("");
       setNotes("");
       setSelectedInvestment(null);
-      // Switch to portfolio tab to show the new investment
       setActiveTab("portfolio");
     } catch (error) {
       console.error("Failed to add investment:", error);
@@ -227,44 +262,209 @@ export default function Investments() {
           </TabsList>
 
           {/* Available Investments Tab */}
-          <TabsContent value="available">
+          <TabsContent value="available" className="space-y-6">
+            {/* Hero Banner */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
+              className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 p-8 text-white"
             >
-              <h2 className="text-3xl font-bold tracking-tight mb-2">
-                Investments That Match Your Soul
-              </h2>
-              <p className="text-muted-foreground">
-                Curated opportunities aligned with your values and financial archetype
-              </p>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-6 w-6" />
+                  <h2 className="text-3xl font-bold">Investments That Match Your Soul</h2>
+                </div>
+                <p className="text-lg mb-4 max-w-3xl">
+                  Discover curated investment opportunities aligned with your values and financial archetype. 
+                  Every investment is carefully selected to match your {user?.archetype?.replace(/_/g, " ") || "unique"} profile.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Target className="h-5 w-5" />
+                    <span className="font-semibold">Values-Aligned</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Leaf className="h-5 w-5" />
+                    <span className="font-semibold">ESG Focused</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Award className="h-5 w-5" />
+                    <span className="font-semibold">Curated Selection</span>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
             </motion.div>
 
+            {/* Quick Stats */}
+            {investments && investments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              >
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">{investmentStats.totalCount}</div>
+                      <div className="text-sm text-muted-foreground mt-1">Available Investments</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">{investmentStats.categories.length}</div>
+                      <div className="text-sm text-muted-foreground mt-1">Investment Categories</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600">{investmentStats.avgESGScore}</div>
+                      <div className="text-sm text-muted-foreground mt-1">Avg ESG Score</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-600">
+                        ${investmentStats.minInvestmentRange.min}+
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">Starting From</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Category Filters */}
+            {investments && investments.length > 0 && investmentStats.categories.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-5 w-5" />
+                      <CardTitle>Filter by Category</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge
+                        variant={selectedCategory === null ? "default" : "outline"}
+                        className="cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => setSelectedCategory(null)}
+                      >
+                        All ({investments.length})
+                      </Badge>
+                      {investmentStats.categories.map((category) => {
+                        const count = investments.filter(inv => inv.category === category).length;
+                        return (
+                          <Badge
+                            key={category}
+                            variant={selectedCategory === category ? "default" : "outline"}
+                            className="cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => setSelectedCategory(category)}
+                          >
+                            {category} ({count})
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Investment Tips */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="backdrop-blur-sm bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-200 dark:border-blue-800">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="text-blue-900 dark:text-blue-100">Investment Wisdom</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">1</div>
+                        <h4 className="font-semibold">Diversify</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Spread investments across different categories to reduce risk and maximize returns.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">2</div>
+                        <h4 className="font-semibold">ESG Matters</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        High ESG scores indicate sustainable practices that often lead to long-term stability.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">3</div>
+                        <h4 className="font-semibold">Match Your Values</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Invest in what you believe in. Values-aligned investing creates meaningful impact.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Investment Cards */}
             {!investments ? (
               <div className="text-center py-12">
                 <LoadingScreen message="Loading investments..." />
               </div>
-            ) : investments.length === 0 ? (
+            ) : filteredInvestments.length === 0 ? (
               <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
                 <CardContent className="py-12 text-center">
                   <Leaf className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Investments Available</h3>
-                  <p className="text-muted-foreground">
-                    Check back soon for new investment opportunities
+                  <h3 className="text-lg font-semibold mb-2">
+                    {selectedCategory ? `No ${selectedCategory} Investments Available` : "No Investments Available"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {selectedCategory 
+                      ? "Try selecting a different category to see more options."
+                      : "Check back soon for new investment opportunities"}
                   </p>
+                  {selectedCategory && (
+                    <Button onClick={() => setSelectedCategory(null)} variant="outline">
+                      View All Investments
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {investments.map((investment, index) => (
+                {filteredInvestments.map((investment, index) => (
                   <motion.div
                     key={investment._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full flex flex-col">
+                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full flex flex-col hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
                           <CardTitle className="text-lg">{investment.name}</CardTitle>
