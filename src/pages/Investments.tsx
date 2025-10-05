@@ -19,7 +19,6 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { toast } from "sonner";
 import type { Id } from "@/convex/_generated/dataModel";
 import { PieChart as RechartsPie, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts";
-import { convertCurrency, formatCurrency, getCurrencySymbol } from "@/lib/utils";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -27,15 +26,10 @@ export default function Investments() {
   const investments = useQuery(api.investments.getMatchingInvestments);
   const portfolio = useQuery(api.portfolio.getUserPortfolio);
   const portfolioStats = useQuery(api.portfolio.getPortfolioStats);
-  const profile = useQuery(api.profile.getProfile);
   const addToPortfolio = useMutation(api.portfolio.addToPortfolio);
   const addCustomInvestment = useMutation(api.portfolio.addCustomInvestment);
   const updatePortfolioEntry = useMutation(api.portfolio.updatePortfolioEntry);
   const removeFromPortfolio = useMutation(api.portfolio.removeFromPortfolio);
-
-  // Get user's currency preference
-  const userCurrency = profile?.currency || "USD";
-  const currencySymbol = getCurrencySymbol(userCurrency);
 
   const [activeTab, setActiveTab] = useState("available");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -61,17 +55,13 @@ export default function Investments() {
   const [customQuantity, setCustomQuantity] = useState("");
   const [customNotes, setCustomNotes] = useState("");
 
-  // Helper function to convert and format amounts
-  const convertAmount = (amount: number) => convertCurrency(amount, "USD", userCurrency);
-  const formatAmount = (amount: number) => formatCurrency(convertAmount(amount), userCurrency);
-
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Calculate investment stats with currency conversion
+  // Calculate investment stats
   const investmentStats = useMemo(() => {
     if (!investments || investments.length === 0) {
       return {
@@ -86,7 +76,7 @@ export default function Investments() {
     const avgESGScore = Math.round(
       investments.reduce((sum, inv) => sum + inv.esgScore, 0) / investments.length
     );
-    const minInvestments = investments.map(inv => convertAmount(inv.minInvestment));
+    const minInvestments = investments.map(inv => inv.minInvestment);
     const minInvestmentRange = {
       min: Math.min(...minInvestments),
       max: Math.max(...minInvestments),
@@ -98,7 +88,7 @@ export default function Investments() {
       avgESGScore,
       minInvestmentRange,
     };
-  }, [investments, userCurrency]);
+  }, [investments]);
 
   // Filter investments by category
   const filteredInvestments = useMemo(() => {
@@ -130,12 +120,8 @@ export default function Investments() {
       return;
     }
 
-    // Convert amount back to USD for storage
-    const amountInUSD = convertCurrency(amountNum, userCurrency, "USD");
-    const minInvestmentInUserCurrency = convertAmount(selectedInvestment.minInvestment);
-
-    if (amountNum < minInvestmentInUserCurrency) {
-      toast.error(`Minimum investment is ${formatCurrency(minInvestmentInUserCurrency, userCurrency)}`);
+    if (amountNum < selectedInvestment.minInvestment) {
+      toast.error(`Minimum investment is ${selectedInvestment.minInvestment.toLocaleString()}`);
       return;
     }
 
@@ -152,7 +138,7 @@ export default function Investments() {
       await addToPortfolio({
         investmentId: selectedInvestment._id,
         investmentName: selectedInvestment.name,
-        amountInvested: amountInUSD,
+        amountInvested: amountNum,
         quantity: quantity && quantity.trim() !== "" ? parseFloat(quantity) : undefined,
         notes: notes && notes.trim() !== "" ? notes.trim() : undefined,
       });
@@ -222,17 +208,13 @@ export default function Investments() {
       }
     }
 
-    // Convert amounts back to USD for storage
-    const amountInUSD = convertCurrency(amountNum, userCurrency, "USD");
-    const currentValueInUSD = convertCurrency(currentValueNum, userCurrency, "USD");
-
     setIsSubmitting(true);
     try {
       await addCustomInvestment({
         investmentName: customName.trim(),
         category: customCategory && customCategory.trim() !== "" ? customCategory.trim() : undefined,
-        amountInvested: amountInUSD,
-        currentValue: currentValueInUSD,
+        amountInvested: amountNum,
+        currentValue: currentValueNum,
         purchaseDate: customPurchaseDate,
         quantity: customQuantity && customQuantity.trim() !== "" ? parseFloat(customQuantity) : undefined,
         notes: customNotes && customNotes.trim() !== "" ? customNotes.trim() : undefined,
@@ -288,14 +270,11 @@ export default function Investments() {
       }
     }
 
-    // Convert amount back to USD for storage
-    const currentValueInUSD = convertCurrency(currentValueNum, userCurrency, "USD");
-
     setIsSubmitting(true);
     try {
       await updatePortfolioEntry({
         portfolioId: editingEntry._id,
-        currentValue: currentValueInUSD,
+        currentValue: currentValueNum,
         quantity: customQuantity && customQuantity.trim() !== "" ? parseFloat(customQuantity) : undefined,
         notes: customNotes && customNotes.trim() !== "" ? customNotes.trim() : undefined,
       });
@@ -313,7 +292,7 @@ export default function Investments() {
     }
   };
 
-  // Add chart data calculations with currency conversion
+  // Add chart data calculations
   const chartData = useMemo(() => {
     if (!portfolio || portfolio.length === 0) {
       return {
@@ -323,19 +302,17 @@ export default function Investments() {
       };
     }
 
-    // Portfolio Allocation Data (Pie Chart) - converted to user currency
+    // Portfolio Allocation Data (Pie Chart)
     const allocationData = portfolio.map((item) => ({
       name: item.investmentName,
-      value: convertAmount(item.amountInvested),
-      currentValue: convertAmount(item.currentValue),
+      value: item.amountInvested,
+      currentValue: item.currentValue,
     }));
 
-    // Individual Performance Data (Bar Chart) - converted to user currency
+    // Individual Performance Data (Bar Chart)
     const individualPerformanceData = portfolio.map((item) => {
-      const amountInvested = convertAmount(item.amountInvested);
-      const currentValue = convertAmount(item.currentValue);
-      const gainLoss = currentValue - amountInvested;
-      const percentChange = amountInvested > 0 ? (gainLoss / amountInvested) * 100 : 0;
+      const gainLoss = item.currentValue - item.amountInvested;
+      const percentChange = item.amountInvested > 0 ? (gainLoss / item.amountInvested) * 100 : 0;
       
       return {
         name: item.investmentName.length > 15 
@@ -347,13 +324,13 @@ export default function Investments() {
       };
     }).sort((a, b) => b.gainLoss - a.gainLoss);
 
-    // Performance Over Time Data (Line Chart) - converted to user currency
+    // Performance Over Time Data (Line Chart)
     const performanceData = portfolio.map((item) => {
       const date = new Date(item.purchaseDate);
       return {
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        invested: convertAmount(item.amountInvested),
-        current: convertAmount(item.currentValue),
+        invested: item.amountInvested,
+        current: item.currentValue,
         timestamp: date.getTime(),
       };
     }).sort((a, b) => a.timestamp - b.timestamp);
@@ -376,7 +353,7 @@ export default function Investments() {
       performanceData: aggregatedPerformance,
       individualPerformanceData,
     };
-  }, [portfolio, userCurrency]);
+  }, [portfolio]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -384,7 +361,7 @@ export default function Investments() {
     return <LoadingScreen message="Finding investments for you..." />;
   }
 
-  // Safe access to portfolio stats with defaults and currency conversion
+  // Safe access to portfolio stats with defaults
   const stats = useMemo(() => {
     if (!portfolioStats) {
       return {
@@ -397,13 +374,13 @@ export default function Investments() {
     }
 
     return {
-      totalInvested: convertAmount(portfolioStats.totalInvested),
-      currentValue: convertAmount(portfolioStats.currentValue),
-      totalGainLoss: convertAmount(portfolioStats.totalGainLoss),
+      totalInvested: portfolioStats.totalInvested,
+      currentValue: portfolioStats.currentValue,
+      totalGainLoss: portfolioStats.totalGainLoss,
       percentageChange: portfolioStats.percentageChange,
       investmentCount: portfolioStats.investmentCount,
     };
-  }, [portfolioStats, userCurrency]);
+  }, [portfolioStats]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -504,7 +481,7 @@ export default function Investments() {
                   <CardContent className="pt-6">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-orange-600">
-                        {currencySymbol}{investmentStats.minInvestmentRange.min.toFixed(0)}+
+                        ${investmentStats.minInvestmentRange.min.toFixed(0)}+
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">Starting From</div>
                     </div>
@@ -672,7 +649,7 @@ export default function Investments() {
                           </div>
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Min. Investment</span>
-                            <span className="font-semibold">{formatAmount(investment.minInvestment)}</span>
+                            <span className="font-semibold">${investment.minInvestment.toLocaleString()}</span>
                           </div>
                         </div>
 
@@ -720,7 +697,7 @@ export default function Investments() {
                   <CardContent>
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-5 w-5 text-blue-500" />
-                      <span className="text-2xl font-bold">{formatCurrency(stats.totalInvested, userCurrency)}</span>
+                      <span className="text-2xl font-bold">${stats.totalInvested.toLocaleString()}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -732,7 +709,7 @@ export default function Investments() {
                   <CardContent>
                     <div className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-green-500" />
-                      <span className="text-2xl font-bold">{formatCurrency(stats.currentValue, userCurrency)}</span>
+                      <span className="text-2xl font-bold">${stats.currentValue.toLocaleString()}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -749,7 +726,7 @@ export default function Investments() {
                         <TrendingDown className="h-5 w-5 text-red-500" />
                       )}
                       <span className={`text-2xl font-bold ${stats.totalGainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {formatCurrency(Math.abs(stats.totalGainLoss), userCurrency)}
+                        ${Math.abs(stats.totalGainLoss).toLocaleString()}
                       </span>
                     </div>
                   </CardContent>
@@ -947,10 +924,8 @@ export default function Investments() {
                 ) : portfolio.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {portfolio.map((item, index) => {
-                      const amountInvested = convertAmount(item.amountInvested);
-                      const currentValue = convertAmount(item.currentValue);
-                      const gainLoss = currentValue - amountInvested;
-                      const percentChange = amountInvested > 0 ? (gainLoss / amountInvested) * 100 : 0;
+                      const gainLoss = item.currentValue - item.amountInvested;
+                      const percentChange = item.amountInvested > 0 ? (gainLoss / item.amountInvested) * 100 : 0;
                       
                       return (
                         <motion.div
@@ -996,16 +971,16 @@ export default function Investments() {
                             <CardContent className="space-y-3">
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Invested</span>
-                                <span className="font-semibold">{formatCurrency(amountInvested, userCurrency)}</span>
+                                <span className="font-semibold">${item.amountInvested.toLocaleString()}</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Current Value</span>
-                                <span className="font-semibold">{formatCurrency(currentValue, userCurrency)}</span>
+                                <span className="font-semibold">${item.currentValue.toLocaleString()}</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Gain/Loss</span>
                                 <span className={`font-semibold ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
-                                  {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, userCurrency)} ({percentChange >= 0 ? "+" : ""}{percentChange.toFixed(2)}%)
+                                  {gainLoss >= 0 ? "+" : ""}${Math.abs(gainLoss).toLocaleString()} ({percentChange >= 0 ? "+" : ""}{percentChange.toFixed(2)}%)
                                 </span>
                               </div>
                               {item.quantity && (
@@ -1057,14 +1032,14 @@ export default function Investments() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Investment Amount * ({userCurrency})</Label>
+              <Label htmlFor="amount">Investment Amount * (USD)</Label>
               <Input
                 id="amount"
                 type="number"
-                placeholder={`Min. ${formatCurrency(selectedInvestment ? convertAmount(selectedInvestment.minInvestment) : 0, userCurrency)}`}
+                placeholder={`Min. ${selectedInvestment ? selectedInvestment.minInvestment.toLocaleString() : 0}`}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                min={selectedInvestment ? convertAmount(selectedInvestment.minInvestment) : 0}
+                min={selectedInvestment ? selectedInvestment.minInvestment : 0}
                 step="0.01"
               />
             </div>
@@ -1108,7 +1083,7 @@ export default function Investments() {
           <DialogHeader>
             <DialogTitle>Add Custom Investment</DialogTitle>
             <DialogDescription>
-              Track investments you've made on other platforms or custom assets (amounts in {userCurrency})
+              Track investments you've made on other platforms or custom assets (amounts in USD)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1132,11 +1107,11 @@ export default function Investments() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="customAmount">Amount Invested * ({userCurrency})</Label>
+                <Label htmlFor="customAmount">Amount Invested * (USD)</Label>
                 <Input
                   id="customAmount"
                   type="number"
-                  placeholder={`${currencySymbol}0.00`}
+                  placeholder="$0.00"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
                   min="0"
@@ -1144,11 +1119,11 @@ export default function Investments() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="customCurrentValue">Current Value * ({userCurrency})</Label>
+                <Label htmlFor="customCurrentValue">Current Value * (USD)</Label>
                 <Input
                   id="customCurrentValue"
                   type="number"
-                  placeholder={`${currencySymbol}0.00`}
+                  placeholder="$0.00"
                   value={customCurrentValue}
                   onChange={(e) => setCustomCurrentValue(e.target.value)}
                   min="0"
@@ -1207,16 +1182,16 @@ export default function Investments() {
           <DialogHeader>
             <DialogTitle>Update Investment</DialogTitle>
             <DialogDescription>
-              Update the current value and details for {editingEntry?.investmentName} (amounts in {userCurrency})
+              Update the current value and details for {editingEntry?.investmentName} (amounts in USD)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="editCurrentValue">Current Value * ({userCurrency})</Label>
+              <Label htmlFor="editCurrentValue">Current Value * (USD)</Label>
               <Input
                 id="editCurrentValue"
                 type="number"
-                placeholder={`${currencySymbol}0.00`}
+                placeholder="$0.00"
                 value={customCurrentValue}
                 onChange={(e) => setCustomCurrentValue(e.target.value)}
                 min="0"
