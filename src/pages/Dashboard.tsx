@@ -413,27 +413,87 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          {/* AI Coach - Updated */}
+          {/* AI Coach - Enhanced and Enlarged */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
+            className="md:col-span-2 lg:col-span-1"
           >
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+            <Card className="backdrop-blur-sm bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 border-2 border-indigo-200 dark:border-indigo-800 shadow-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="text-indigo-500" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Sparkles className="h-6 w-6 text-indigo-500" />
+                  </motion.div>
                   AI Coach
                 </CardTitle>
-                <CardDescription>I'm here to help</CardDescription>
+                <CardDescription className="text-base">Your 24/7 financial companion</CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  "Remember, every small step counts. You're doing great! 💚"
-                </p>
-                <Button variant="outline" className="w-full" onClick={() => setIsChatOpen(true)}>
-                  Chat Now
+              <CardContent className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800"
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-2">💚 Today's Insight</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        "Remember, every small step counts. You're doing great! Your Peace Meter shows you're on the right track. Keep nurturing your financial soul."
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="justify-start text-xs"
+                      onClick={() => setIsChatOpen(true)}
+                    >
+                      <MessageCircle className="mr-2 h-3 w-3" />
+                      Ask Question
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="justify-start text-xs"
+                      onClick={() => setIsChatOpen(true)}
+                    >
+                      <Target className="mr-2 h-3 w-3" />
+                      Goal Advice
+                    </Button>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => setIsChatOpen(true)} 
+                  className="w-full h-12 text-base font-semibold group"
+                  size="lg"
+                >
+                  <MessageCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  Start Conversation
                 </Button>
+
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-2 h-2 rounded-full bg-green-500"
+                  />
+                  AI Coach is online and ready to help
+                </div>
               </CardContent>
             </Card>
           </motion.div>

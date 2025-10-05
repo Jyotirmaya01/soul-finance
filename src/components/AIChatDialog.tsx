@@ -90,14 +90,19 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-500" />
+      <DialogContent className="max-w-4xl h-[700px] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+          <DialogTitle className="flex items-center gap-3 text-2xl">
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="h-7 w-7 text-indigo-500" />
+            </motion.div>
             AI Coach
           </DialogTitle>
-          <DialogDescription>
-            Your personal financial companion, here to help and support you
+          <DialogDescription className="text-base">
+            Your personal financial companion, here to help and support you 💚
           </DialogDescription>
         </DialogHeader>
 
@@ -155,25 +160,30 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         </div>
 
         {/* Input Area */}
-        <div className="p-6 pt-4 border-t">
-          <div className="flex gap-2">
+        <div className="p-6 pt-4 border-t bg-muted/30">
+          <div className="flex gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask me anything about finance..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 h-12 text-base"
             />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+            <Button 
+              onClick={handleSend} 
+              disabled={isLoading || !input.trim()}
+              size="lg"
+              className="px-6"
+            >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-muted-foreground mt-3 text-center">
             Press Enter to send • The AI Coach provides guidance, not financial advice
           </p>
         </div>
