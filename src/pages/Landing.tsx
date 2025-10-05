@@ -1,8 +1,9 @@
 import { TreeVisualization } from "@/components/TreeVisualization";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from "framer-motion";
-import { ArrowRight, Heart, Leaf, Shield, Sparkles, Target, Users } from "lucide-react";
+import { ArrowRight, Heart, Leaf, Shield, Sparkles, Target, Users, Mail, MapPin, Phone, Star, TrendingUp, Award } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export default function Landing() {
@@ -48,6 +49,44 @@ export default function Landing() {
     },
   ];
 
+  const reviews = [
+    {
+      name: "Priya Sharma",
+      role: "Freedom Seeker",
+      rating: 5,
+      text: "FinSoul helped me understand my emotional relationship with money. The Peace Meter is a game-changer!",
+      avatar: "PS"
+    },
+    {
+      name: "Rahul Mehta",
+      role: "Legacy Builder",
+      rating: 5,
+      text: "Finally, a financial app that aligns with my values. The ethical investment options are exactly what I needed.",
+      avatar: "RM"
+    },
+    {
+      name: "Ananya Desai",
+      role: "Harmony Keeper",
+      rating: 5,
+      text: "The community circles have been incredible. I've learned so much from others on similar journeys.",
+      avatar: "AD"
+    },
+    {
+      name: "Vikram Singh",
+      role: "Adventure Investor",
+      rating: 5,
+      text: "The AI Coach provides personalized guidance that actually understands my financial personality. Highly recommend!",
+      avatar: "VS"
+    }
+  ];
+
+  const stats = [
+    { number: "10,000+", label: "Happy Investors" },
+    { number: "₹500Cr+", label: "Assets Managed" },
+    { number: "95%", label: "Satisfaction Rate" },
+    { number: "50+", label: "ESG Investments" }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Navigation */}
@@ -56,6 +95,12 @@ export default function Landing() {
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="FinSoul" className="h-8 w-8" />
             <span className="text-xl font-bold">FinSoul</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#features" className="text-sm hover:text-primary transition-colors">Features</a>
+            <a href="#about" className="text-sm hover:text-primary transition-colors">About</a>
+            <a href="#reviews" className="text-sm hover:text-primary transition-colors">Reviews</a>
+            <a href="#contact" className="text-sm hover:text-primary transition-colors">Contact</a>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated && user ? (
@@ -116,8 +161,32 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-6"
+        >
+          {stats.map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-6 rounded-2xl text-center border"
+            >
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.number}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -149,6 +218,144 @@ export default function Landing() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* About Us Section */}
+      <section id="about" className="container mx-auto px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold tracking-tight mb-4">About FinSoul</h2>
+            <p className="text-xl text-muted-foreground">
+              Redefining the relationship between people and their money
+            </p>
+          </div>
+          <div className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-8 rounded-2xl border">
+            <div className="space-y-6 text-muted-foreground leading-relaxed">
+              <p>
+                FinSoul was born from a simple belief: financial wellness isn't just about numbers—it's about understanding your emotional relationship with money. We're not another cold, corporate financial platform. We're your compassionate companion on the journey to financial peace.
+              </p>
+              <p>
+                Our mission is to help you build wealth that aligns with your deepest values. Through our unique Soul Scan technology, AI-powered coaching, and values-aligned investment opportunities, we're creating a new paradigm in personal finance—one that honors both your financial goals and your emotional well-being.
+              </p>
+              <div className="grid md:grid-cols-3 gap-6 pt-6">
+                <div className="text-center">
+                  <Award className="h-10 w-10 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Our Vision</h4>
+                  <p className="text-sm">A world where everyone has financial peace and prosperity</p>
+                </div>
+                <div className="text-center">
+                  <Heart className="h-10 w-10 text-pink-500 mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Our Values</h4>
+                  <p className="text-sm">Empathy, transparency, and human-first design</p>
+                </div>
+                <div className="text-center">
+                  <TrendingUp className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Our Approach</h4>
+                  <p className="text-sm">Blend emotional intelligence with smart investing</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Reviews Section */}
+      <section id="reviews" className="container mx-auto px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold tracking-tight mb-4">
+            What Our Community Says
+          </h2>
+          <p className="text-xl text-muted-foreground">
+            Real stories from real people on their financial journey
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {reviews.map((review, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white font-bold">
+                      {review.avatar}
+                    </div>
+                    <div>
+                      <div className="font-semibold">{review.name}</div>
+                      <div className="text-xs text-muted-foreground">{review.role}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "{review.text}"
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="container mx-auto px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold tracking-tight mb-4">Get In Touch</h2>
+            <p className="text-xl text-muted-foreground">
+              We'd love to hear from you. Reach out anytime!
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-6 rounded-2xl border text-center"
+            >
+              <Mail className="h-10 w-10 text-primary mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">Email Us</h3>
+              <p className="text-sm text-muted-foreground">support@finsoul.com</p>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-6 rounded-2xl border text-center"
+            >
+              <Phone className="h-10 w-10 text-green-500 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">Call Us</h3>
+              <p className="text-sm text-muted-foreground">+91 1800-123-4567</p>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-6 rounded-2xl border text-center"
+            >
+              <MapPin className="h-10 w-10 text-blue-500 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">Visit Us</h3>
+              <p className="text-sm text-muted-foreground">Mumbai, India</p>
+            </motion.div>
+          </div>
+        </motion.div>
       </section>
 
       {/* CTA Section */}
