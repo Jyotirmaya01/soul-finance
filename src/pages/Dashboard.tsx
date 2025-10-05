@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { convertCurrency, formatCurrency, getCurrencySymbol } from "@/lib/utils";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -38,6 +39,11 @@ export default function Dashboard() {
   const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 5 });
   const createMoodEntry = useMutation(api.moodJournals.createMoodEntry);
   const createLifeGoal = useMutation(api.lifeGoals.createLifeGoal);
+  const userProfile = useQuery(api.profile.getProfile);
+
+  // Get user's preferred currency, default to INR
+  const userCurrency = userProfile?.currency || "INR";
+  const currencySymbol = getCurrencySymbol(userCurrency);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -99,10 +105,14 @@ export default function Dashboard() {
     }
 
     try {
+      // Convert amounts from user's currency to USD for storage
+      const targetAmountInUSD = convertCurrency(Number(goalAmount), userCurrency, "USD");
+      const currentAmountInUSD = convertCurrency(Number(goalCurrentAmount) || 0, userCurrency, "USD");
+
       const result = await createLifeGoal({
         title: goalTitle,
-        targetAmount: Number(goalAmount),
-        currentAmount: Number(goalCurrentAmount) || 0,
+        targetAmount: targetAmountInUSD,
+        currentAmount: currentAmountInUSD,
         targetDate: goalDate,
         category: goalCategory,
         priority: 1,
@@ -275,22 +285,32 @@ export default function Dashboard() {
               <CardContent>
                 {lifeGoals && lifeGoals.length > 0 ? (
                   <div className="space-y-3">
-                    {lifeGoals.slice(0, 3).map((goal) => (
-                      <div key={goal._id} className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{goal.title}</span>
-                          <span className="text-muted-foreground">
-                            {Math.round((goal.currentAmount / goal.targetAmount) * 100)}%
-                          </span>
+                    {lifeGoals.slice(0, 3).map((goal) => {
+                      // Convert goal amounts to user's currency
+                      const targetAmount = convertCurrency(goal.targetAmount, "USD", userCurrency);
+                      const currentAmount = convertCurrency(goal.currentAmount, "USD", userCurrency);
+                      const percentage = Math.round((goal.currentAmount / goal.targetAmount) * 100);
+
+                      return (
+                        <div key={goal._id} className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span>{goal.title}</span>
+                            <span className="text-muted-foreground">
+                              {percentage}%
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatCurrency(currentAmount, userCurrency)} / {formatCurrency(targetAmount, userCurrency)}
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-green-500 transition-all"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 transition-all"
-                            style={{ width: `${(goal.currentAmount / goal.targetAmount) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No goals yet. Let's create some!</p>
@@ -520,21 +540,21 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <Label htmlFor="goal-amount">Target Amount (₹) *</Label>
+              <Label htmlFor="goal-amount">Target Amount ({currencySymbol}) *</Label>
               <Input
                 id="goal-amount"
                 type="number"
-                placeholder="e.g., 5000000"
+                placeholder={`e.g., ${userCurrency === "INR" ? "5000000" : userCurrency === "USD" ? "60000" : "50000"}`}
                 value={goalAmount}
                 onChange={(e) => setGoalAmount(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="goal-current">Current Amount (₹)</Label>
+              <Label htmlFor="goal-current">Current Amount ({currencySymbol})</Label>
               <Input
                 id="goal-current"
                 type="number"
-                placeholder="e.g., 500000"
+                placeholder={`e.g., ${userCurrency === "INR" ? "500000" : userCurrency === "USD" ? "6000" : "5000"}`}
                 value={goalCurrentAmount}
                 onChange={(e) => setGoalCurrentAmount(e.target.value)}
               />
