@@ -29,6 +29,36 @@ export const addToPortfolio = mutation({
   },
 });
 
+export const addCustomInvestment = mutation({
+  args: {
+    investmentName: v.string(),
+    category: v.optional(v.string()),
+    amountInvested: v.number(),
+    currentValue: v.number(),
+    purchaseDate: v.string(),
+    quantity: v.optional(v.number()),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const portfolioId = await ctx.db.insert("userPortfolio", {
+      userId: user._id,
+      investmentName: args.investmentName,
+      category: args.category,
+      amountInvested: args.amountInvested,
+      currentValue: args.currentValue,
+      purchaseDate: args.purchaseDate,
+      quantity: args.quantity,
+      notes: args.notes,
+      isCustom: true,
+    });
+
+    return portfolioId;
+  },
+});
+
 export const getUserPortfolio = query({
   args: {},
   handler: async (ctx) => {
@@ -41,6 +71,31 @@ export const getUserPortfolio = query({
       .collect();
 
     return portfolio;
+  },
+});
+
+export const updatePortfolioEntry = mutation({
+  args: {
+    portfolioId: v.id("userPortfolio"),
+    currentValue: v.optional(v.number()),
+    quantity: v.optional(v.number()),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const entry = await ctx.db.get(args.portfolioId);
+    if (!entry || entry.userId !== user._id) {
+      throw new Error("Portfolio entry not found or unauthorized");
+    }
+
+    const updates: any = {};
+    if (args.currentValue !== undefined) updates.currentValue = args.currentValue;
+    if (args.quantity !== undefined) updates.quantity = args.quantity;
+    if (args.notes !== undefined) updates.notes = args.notes;
+
+    await ctx.db.patch(args.portfolioId, updates);
   },
 });
 

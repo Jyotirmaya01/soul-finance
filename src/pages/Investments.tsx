@@ -27,16 +27,33 @@ export default function Investments() {
   const portfolio = useQuery(api.portfolio.getUserPortfolio);
   const portfolioStats = useQuery(api.portfolio.getPortfolioStats);
   const addToPortfolio = useMutation(api.portfolio.addToPortfolio);
+  const addCustomInvestment = useMutation(api.portfolio.addCustomInvestment);
+  const updatePortfolioEntry = useMutation(api.portfolio.updatePortfolioEntry);
   const removeFromPortfolio = useMutation(api.portfolio.removeFromPortfolio);
 
   const [activeTab, setActiveTab] = useState("available");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
+  const [editingEntry, setEditingEntry] = useState<any>(null);
   const [amount, setAmount] = useState("");
   const [quantity, setQuantity] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Custom investment form state
+  const [customName, setCustomName] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
+  const [customAmount, setCustomAmount] = useState("");
+  const [customCurrentValue, setCustomCurrentValue] = useState("");
+  const [customPurchaseDate, setCustomPurchaseDate] = useState<string>(() => {
+    const today = new Date().toISOString().split('T');
+    return today[0] || new Date().toISOString().substring(0, 10);
+  });
+  const [customQuantity, setCustomQuantity] = useState("");
+  const [customNotes, setCustomNotes] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -152,6 +169,126 @@ export default function Investments() {
     } catch (error) {
       console.error("Failed to remove investment:", error);
       toast.error("Failed to remove investment. Please try again.");
+    }
+  };
+
+  const handleAddCustomInvestment = async () => {
+    if (!customName || customName.trim() === "") {
+      toast.error("Please enter an investment name");
+      return;
+    }
+
+    if (!customAmount || customAmount.trim() === "") {
+      toast.error("Please enter the amount invested");
+      return;
+    }
+
+    const amountNum = parseFloat(customAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast.error("Please enter a valid positive amount");
+      return;
+    }
+
+    if (!customCurrentValue || customCurrentValue.trim() === "") {
+      toast.error("Please enter the current value");
+      return;
+    }
+
+    const currentValueNum = parseFloat(customCurrentValue);
+    if (isNaN(currentValueNum) || currentValueNum < 0) {
+      toast.error("Please enter a valid current value");
+      return;
+    }
+
+    if (customQuantity && customQuantity.trim() !== "") {
+      const quantityNum = parseFloat(customQuantity);
+      if (isNaN(quantityNum) || quantityNum <= 0) {
+        toast.error("Please enter a valid positive quantity");
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      await addCustomInvestment({
+        investmentName: customName.trim(),
+        category: customCategory && customCategory.trim() !== "" ? customCategory.trim() : undefined,
+        amountInvested: amountNum,
+        currentValue: currentValueNum,
+        purchaseDate: customPurchaseDate,
+        quantity: customQuantity && customQuantity.trim() !== "" ? parseFloat(customQuantity) : undefined,
+        notes: customNotes && customNotes.trim() !== "" ? customNotes.trim() : undefined,
+      });
+      toast.success("Custom investment added to portfolio! 💚");
+      setIsCustomDialogOpen(false);
+      setCustomName("");
+      setCustomCategory("");
+      setCustomAmount("");
+      setCustomCurrentValue("");
+      const today = new Date().toISOString().split('T');
+      setCustomPurchaseDate(today[0] || new Date().toISOString().substring(0, 10));
+      setCustomQuantity("");
+      setCustomNotes("");
+    } catch (error) {
+      console.error("Failed to add custom investment:", error);
+      toast.error("Failed to add custom investment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditEntry = (entry: any) => {
+    setEditingEntry(entry);
+    setCustomCurrentValue(entry.currentValue.toString());
+    setCustomQuantity(entry.quantity ? entry.quantity.toString() : "");
+    setCustomNotes(entry.notes || "");
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateEntry = async () => {
+    if (!editingEntry) {
+      toast.error("No entry selected");
+      return;
+    }
+
+    if (!customCurrentValue || customCurrentValue.trim() === "") {
+      toast.error("Please enter the current value");
+      return;
+    }
+
+    const currentValueNum = parseFloat(customCurrentValue);
+    if (isNaN(currentValueNum) || currentValueNum < 0) {
+      toast.error("Please enter a valid current value");
+      return;
+    }
+
+    if (customQuantity && customQuantity.trim() !== "") {
+      const quantityNum = parseFloat(customQuantity);
+      if (isNaN(quantityNum) || quantityNum <= 0) {
+        toast.error("Please enter a valid positive quantity");
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      await updatePortfolioEntry({
+        portfolioId: editingEntry._id,
+        currentValue: currentValueNum,
+        quantity: customQuantity && customQuantity.trim() !== "" ? parseFloat(customQuantity) : undefined,
+        notes: customNotes && customNotes.trim() !== "" ? customNotes.trim() : undefined,
+      });
+      toast.success("Investment updated successfully! 💚");
+      setIsEditDialogOpen(false);
+      setEditingEntry(null);
+      setCustomCurrentValue("");
+      setCustomQuantity("");
+      setCustomNotes("");
+    } catch (error) {
+      console.error("Failed to update investment:", error);
+      toast.error("Failed to update investment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -762,7 +899,13 @@ export default function Investments() {
 
               {/* Portfolio Holdings */}
               <div>
-                <h3 className="text-2xl font-bold mb-4">Your Holdings ({stats.investmentCount})</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold">Your Holdings ({stats.investmentCount})</h3>
+                  <Button onClick={() => setIsCustomDialogOpen(true)} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Custom Investment
+                  </Button>
+                </div>
                 {!portfolio ? (
                   <div className="text-center py-12">
                     <LoadingScreen message="Loading portfolio..." />
@@ -783,15 +926,32 @@ export default function Investments() {
                           <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
                             <CardHeader>
                               <div className="flex items-start justify-between">
-                                <CardTitle className="text-lg">{item.investmentName}</CardTitle>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleRemoveFromPortfolio(item._id)}
-                                  className="h-8 w-8 text-red-500 hover:text-red-700"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex-1">
+                                  <CardTitle className="text-lg">{item.investmentName}</CardTitle>
+                                  {item.isCustom && (
+                                    <Badge variant="outline" className="mt-1 text-xs">
+                                      Custom Investment
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleEditEntry(item)}
+                                    className="h-8 w-8 text-blue-500 hover:text-blue-700"
+                                  >
+                                    <TrendingUp className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleRemoveFromPortfolio(item._id)}
+                                    className="h-8 w-8 text-red-500 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
                               <CardDescription>
                                 Purchased: {new Date(item.purchaseDate).toLocaleDateString()}
@@ -901,6 +1061,161 @@ export default function Investments() {
             </Button>
             <Button onClick={handleAddToPortfolio} disabled={isSubmitting}>
               {isSubmitting ? "Adding..." : "Add to Portfolio"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom Investment Dialog */}
+      <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Custom Investment</DialogTitle>
+            <DialogDescription>
+              Track investments you've made on other platforms or custom assets
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="customName">Investment Name *</Label>
+              <Input
+                id="customName"
+                placeholder="e.g., Apple Stock, Bitcoin, Real Estate"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customCategory">Category (Optional)</Label>
+              <Input
+                id="customCategory"
+                placeholder="e.g., Stocks, Crypto, Real Estate"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="customAmount">Amount Invested *</Label>
+                <Input
+                  id="customAmount"
+                  type="number"
+                  placeholder="$0.00"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customCurrentValue">Current Value *</Label>
+                <Input
+                  id="customCurrentValue"
+                  type="number"
+                  placeholder="$0.00"
+                  value={customCurrentValue}
+                  onChange={(e) => setCustomCurrentValue(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="customPurchaseDate">Purchase Date *</Label>
+                <Input
+                  id="customPurchaseDate"
+                  type="date"
+                  value={customPurchaseDate}
+                  onChange={(e) => setCustomPurchaseDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customQuantity">Quantity (Optional)</Label>
+                <Input
+                  id="customQuantity"
+                  type="number"
+                  placeholder="Number of units"
+                  value={customQuantity}
+                  onChange={(e) => setCustomQuantity(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customNotes">Notes (Optional)</Label>
+              <Textarea
+                id="customNotes"
+                placeholder="Add any notes about this investment..."
+                value={customNotes}
+                onChange={(e) => setCustomNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCustomDialogOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddCustomInvestment} disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Investment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Portfolio Entry Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Investment</DialogTitle>
+            <DialogDescription>
+              Update the current value and details for {editingEntry?.investmentName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editCurrentValue">Current Value *</Label>
+              <Input
+                id="editCurrentValue"
+                type="number"
+                placeholder="$0.00"
+                value={customCurrentValue}
+                onChange={(e) => setCustomCurrentValue(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editQuantity">Quantity (Optional)</Label>
+              <Input
+                id="editQuantity"
+                type="number"
+                placeholder="Number of units"
+                value={customQuantity}
+                onChange={(e) => setCustomQuantity(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editNotes">Notes (Optional)</Label>
+              <Textarea
+                id="editNotes"
+                placeholder="Add any notes about this investment..."
+                value={customNotes}
+                onChange={(e) => setCustomNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateEntry} disabled={isSubmitting}>
+              {isSubmitting ? "Updating..." : "Update Investment"}
             </Button>
           </DialogFooter>
         </DialogContent>

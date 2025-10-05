@@ -170,16 +170,17 @@ const schema = defineSchema(
 
     userPortfolio: defineTable({
       userId: v.id("users"),
-      investmentId: v.id("investments"),
+      investmentId: v.optional(v.id("investments")),
       investmentName: v.string(),
+      category: v.optional(v.string()),
       amountInvested: v.number(),
       currentValue: v.number(),
       purchaseDate: v.string(),
       quantity: v.optional(v.number()),
       notes: v.optional(v.string()),
+      isCustom: v.optional(v.boolean()),
     })
-      .index("by_user", ["userId"])
-      .index("by_user_and_investment", ["userId", "investmentId"]),
+      .index("by_user", ["userId"]),
 
     newsletters: defineTable({
       email: v.string(),
