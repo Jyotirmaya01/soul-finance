@@ -20,7 +20,6 @@ export default function Profile() {
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const profile = useQuery(api.profile.getProfile);
   const updateProfile = useMutation(api.profile.updateProfile);
-  const upgradeToPremium = useMutation(api.profile.upgradeToPremium);
 
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -101,15 +100,6 @@ export default function Profile() {
       toast.error("Failed to update profile");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleUpgradeToPremium = async () => {
-    try {
-      await upgradeToPremium();
-      toast.success("Welcome to Premium! 👑");
-    } catch (error) {
-      toast.error("Failed to upgrade to premium");
     }
   };
 
@@ -333,9 +323,9 @@ export default function Profile() {
                     </div>
                   </div>
                 </div>
-                <Button onClick={handleUpgradeToPremium} className="w-full" size="lg">
+                <Button onClick={() => navigate("/pricing")} className="w-full" size="lg">
                   <Crown className="mr-2 h-5 w-5" />
-                  Upgrade to Premium
+                  View Premium Plans
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
                   Cancel anytime • 30-day money-back guarantee
