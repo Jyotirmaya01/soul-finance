@@ -27,6 +27,7 @@ export default function Investments() {
   const addToPortfolio = useMutation(api.portfolio.addToPortfolio);
   const removeFromPortfolio = useMutation(api.portfolio.removeFromPortfolio);
 
+  const [activeTab, setActiveTab] = useState("available");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
   const [amount, setAmount] = useState("");
@@ -47,14 +48,19 @@ export default function Investments() {
   };
 
   const handleAddToPortfolio = async () => {
-    if (!selectedInvestment || !amount) {
+    if (!selectedInvestment) {
+      toast.error("No investment selected");
+      return;
+    }
+
+    if (!amount || amount.trim() === "") {
       toast.error("Please enter an amount");
       return;
     }
 
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error("Please enter a valid positive amount");
       return;
     }
 
@@ -63,14 +69,23 @@ export default function Investments() {
       return;
     }
 
+    // Validate quantity if provided
+    if (quantity && quantity.trim() !== "") {
+      const quantityNum = parseFloat(quantity);
+      if (isNaN(quantityNum) || quantityNum <= 0) {
+        toast.error("Please enter a valid positive quantity");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       await addToPortfolio({
         investmentId: selectedInvestment._id,
         investmentName: selectedInvestment.name,
         amountInvested: amountNum,
-        quantity: quantity ? parseFloat(quantity) : undefined,
-        notes: notes || undefined,
+        quantity: quantity && quantity.trim() !== "" ? parseFloat(quantity) : undefined,
+        notes: notes && notes.trim() !== "" ? notes.trim() : undefined,
       });
       toast.success("Investment added to portfolio! 💚");
       setIsAddDialogOpen(false);
@@ -78,19 +93,28 @@ export default function Investments() {
       setQuantity("");
       setNotes("");
       setSelectedInvestment(null);
+      // Switch to portfolio tab to show the new investment
+      setActiveTab("portfolio");
     } catch (error) {
-      toast.error("Failed to add investment");
+      console.error("Failed to add investment:", error);
+      toast.error("Failed to add investment. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleRemoveFromPortfolio = async (portfolioId: Id<"userPortfolio">) => {
+    if (!portfolioId) {
+      toast.error("Invalid portfolio item");
+      return;
+    }
+
     try {
       await removeFromPortfolio({ portfolioId });
       toast.success("Investment removed from portfolio");
     } catch (error) {
-      toast.error("Failed to remove investment");
+      console.error("Failed to remove investment:", error);
+      toast.error("Failed to remove investment. Please try again.");
     }
   };
 
@@ -98,6 +122,7 @@ export default function Investments() {
     return <LoadingScreen message="Finding investments for you..." />;
   }
 
+  // Safe access to portfolio stats with defaults
   const stats = portfolioStats || {
     totalInvested: 0,
     currentValue: 0,
@@ -121,7 +146,7 @@ export default function Investments() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="available" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
             <TabsTrigger value="available">
               <Leaf className="h-4 w-4 mr-2" />
@@ -148,80 +173,96 @@ export default function Investments() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {investments?.map((investment, index) => (
-                <motion.div
-                  key={investment._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full flex flex-col">
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <CardTitle className="text-lg">{investment.name}</CardTitle>
-                        {investment.isPremium && (
-                          <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white">
-                            Premium
-                          </Badge>
-                        )}
-                      </div>
-                      <CardDescription>{investment.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col justify-between">
-                      <div className="space-y-4 mb-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">ESG Score</span>
-                          <div className="flex items-center gap-1">
-                            <Leaf className="h-4 w-4 text-green-500" />
-                            <span className="font-semibold">{investment.esgScore}/100</span>
+            {!investments ? (
+              <div className="text-center py-12">
+                <LoadingScreen message="Loading investments..." />
+              </div>
+            ) : investments.length === 0 ? (
+              <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+                <CardContent className="py-12 text-center">
+                  <Leaf className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Investments Available</h3>
+                  <p className="text-muted-foreground">
+                    Check back soon for new investment opportunities
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {investments.map((investment, index) => (
+                  <motion.div
+                    key={investment._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full flex flex-col">
+                      <CardHeader>
+                        <div className="flex items-start justify-between mb-2">
+                          <CardTitle className="text-lg">{investment.name}</CardTitle>
+                          {investment.isPremium && (
+                            <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white">
+                              Premium
+                            </Badge>
+                          )}
+                        </div>
+                        <CardDescription>{investment.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1 flex flex-col justify-between">
+                        <div className="space-y-4 mb-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">ESG Score</span>
+                            <div className="flex items-center gap-1">
+                              <Leaf className="h-4 w-4 text-green-500" />
+                              <span className="font-semibold">{investment.esgScore}/100</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Expected Return</span>
+                            <div className="flex items-center gap-1">
+                              <TrendingUp className="h-4 w-4 text-blue-500" />
+                              <span className="font-semibold">{investment.expectedReturn}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Risk Level</span>
+                            <Badge className={getRiskColor(investment.riskLevel)}>
+                              <Shield className="h-3 w-3 mr-1" />
+                              {investment.riskLevel}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Min. Investment</span>
+                            <span className="font-semibold">${investment.minInvestment}</span>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Expected Return</span>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-4 w-4 text-blue-500" />
-                            <span className="font-semibold">{investment.expectedReturn}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Risk Level</span>
-                          <Badge className={getRiskColor(investment.riskLevel)}>
-                            <Shield className="h-3 w-3 mr-1" />
-                            {investment.riskLevel}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Min. Investment</span>
-                          <span className="font-semibold">${investment.minInvestment}</span>
-                        </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <div className="p-3 bg-accent rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">Why This Matches You</p>
-                          <p className="text-sm flex items-center gap-1">
-                            <Heart className="h-3 w-3 text-pink-500" fill="currentColor" />
-                            Aligned with your {user?.archetype?.replace("_", " ")} values
-                          </p>
+                        <div className="space-y-2">
+                          <div className="p-3 bg-accent rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Why This Matches You</p>
+                            <p className="text-sm flex items-center gap-1">
+                              <Heart className="h-3 w-3 text-pink-500" fill="currentColor" />
+                              Aligned with your {user?.archetype?.replace(/_/g, " ") || "financial"} values
+                            </p>
+                          </div>
+                          <Button
+                            className="w-full"
+                            variant="default"
+                            onClick={() => {
+                              setSelectedInvestment(investment);
+                              setIsAddDialogOpen(true);
+                            }}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add to Portfolio
+                          </Button>
                         </div>
-                        <Button
-                          className="w-full"
-                          variant="default"
-                          onClick={() => {
-                            setSelectedInvestment(investment);
-                            setIsAddDialogOpen(true);
-                          }}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add to Portfolio
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* My Portfolio Tab */}
@@ -293,11 +334,15 @@ export default function Investments() {
               {/* Portfolio Holdings */}
               <div>
                 <h3 className="text-2xl font-bold mb-4">Your Holdings ({stats.investmentCount})</h3>
-                {portfolio && portfolio.length > 0 ? (
+                {!portfolio ? (
+                  <div className="text-center py-12">
+                    <LoadingScreen message="Loading portfolio..." />
+                  </div>
+                ) : portfolio.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {portfolio.map((item, index) => {
                       const gainLoss = item.currentValue - item.amountInvested;
-                      const percentChange = (gainLoss / item.amountInvested) * 100;
+                      const percentChange = item.amountInvested > 0 ? (gainLoss / item.amountInvested) * 100 : 0;
                       
                       return (
                         <motion.div
@@ -363,7 +408,7 @@ export default function Investments() {
                       <p className="text-muted-foreground mb-4">
                         Start building your portfolio by adding investments from the Available tab
                       </p>
-                      <Button onClick={() => document.querySelector('[value="available"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))}>
+                      <Button onClick={() => setActiveTab("available")}>
                         <Plus className="mr-2 h-4 w-4" />
                         Browse Investments
                       </Button>
@@ -382,7 +427,7 @@ export default function Investments() {
           <DialogHeader>
             <DialogTitle>Add to Portfolio</DialogTitle>
             <DialogDescription>
-              Add {selectedInvestment?.name} to your investment portfolio
+              Add {selectedInvestment?.name || "this investment"} to your investment portfolio
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -394,6 +439,8 @@ export default function Investments() {
                 placeholder={`Min. $${selectedInvestment?.minInvestment || 0}`}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                min={selectedInvestment?.minInvestment || 0}
+                step="0.01"
               />
             </div>
             <div className="space-y-2">
@@ -404,6 +451,8 @@ export default function Investments() {
                 placeholder="Number of units"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                min="0"
+                step="0.01"
               />
             </div>
             <div className="space-y-2">
@@ -418,7 +467,7 @@ export default function Investments() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button onClick={handleAddToPortfolio} disabled={isSubmitting}>
