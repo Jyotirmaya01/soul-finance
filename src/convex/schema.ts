@@ -61,6 +61,10 @@ const schema = defineSchema(
       // New profile fields
       phoneNumber: v.optional(v.string()),
       dateOfBirth: v.optional(v.string()),
+      
+      // Celebration tracking
+      moodStreakCount: v.optional(v.number()),
+      lastMoodEntryDate: v.optional(v.string()),
     }).index("email", ["email"]),
 
     soulScans: defineTable({
@@ -114,6 +118,18 @@ const schema = defineSchema(
       .index("by_circle", ["circleId"])
       .index("by_user", ["userId"])
       .index("by_circle_and_user", ["circleId", "userId"]),
+
+    celebrations: defineTable({
+      userId: v.id("users"),
+      type: v.string(),
+      triggeredAt: v.number(),
+      message: v.optional(v.string()),
+      metadata: v.optional(v.object({
+        goalId: v.optional(v.id("lifeGoals")),
+        streakCount: v.optional(v.number()),
+        peaceMeterChange: v.optional(v.number()),
+      })),
+    }).index("by_user", ["userId"]),
 
     challenges: defineTable({
       title: v.string(),

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AIChatDialog } from "@/components/AIChatDialog";
+import { CelebrationSystem, CelebrationType } from "@/components/CelebrationSystem";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
@@ -29,6 +30,9 @@ export default function Dashboard() {
   const [goalCurrentAmount, setGoalCurrentAmount] = useState("");
   const [goalDate, setGoalDate] = useState("");
   const [goalCategory, setGoalCategory] = useState("savings");
+  const [celebrationType, setCelebrationType] = useState<CelebrationType | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationMessage, setCelebrationMessage] = useState<string | undefined>();
 
   const lifeGoals = useQuery(api.lifeGoals.getUserLifeGoals);
   const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 5 });
@@ -65,7 +69,7 @@ export default function Dashboard() {
     if (!mood) return;
 
     try {
-      await createMoodEntry({
+      const result = await createMoodEntry({
         date: new Date().toISOString().split("T")[0] as string,
         mood: mood.label,
         emoji: mood.emoji,
@@ -76,6 +80,13 @@ export default function Dashboard() {
       toast.success("Mood saved! 💚");
       setJournalNote("");
       setSelectedMood("");
+
+      // Trigger celebration if streak milestone
+      if (result.shouldCelebrate) {
+        setCelebrationType("mood_streak");
+        setCelebrationMessage(`${result.streakCount} day streak! Keep it up! 🔥`);
+        setShowCelebration(true);
+      }
     } catch (error) {
       toast.error("Failed to save mood");
     }
@@ -88,7 +99,7 @@ export default function Dashboard() {
     }
 
     try {
-      await createLifeGoal({
+      const result = await createLifeGoal({
         title: goalTitle,
         targetAmount: Number(goalAmount),
         currentAmount: Number(goalCurrentAmount) || 0,
@@ -96,6 +107,7 @@ export default function Dashboard() {
         category: goalCategory,
         priority: 1,
       });
+      
       toast.success("Goal added! 🎯");
       setIsAddGoalOpen(false);
       setGoalTitle("");
@@ -103,6 +115,12 @@ export default function Dashboard() {
       setGoalCurrentAmount("");
       setGoalDate("");
       setGoalCategory("savings");
+
+      // Trigger celebration if first goal
+      if (result.shouldCelebrate) {
+        setCelebrationType("first_goal");
+        setShowCelebration(true);
+      }
     } catch (error) {
       toast.error("Failed to add goal");
     }
@@ -494,6 +512,20 @@ export default function Dashboard() {
 
       {/* AI Chat Dialog */}
       <AIChatDialog open={isChatOpen} onOpenChange={setIsChatOpen} />
+
+      {/* Celebration System */}
+      {celebrationType && (
+        <CelebrationSystem
+          type={celebrationType}
+          show={showCelebration}
+          onComplete={() => {
+            setShowCelebration(false);
+            setCelebrationType(null);
+            setCelebrationMessage(undefined);
+          }}
+          customMessage={celebrationMessage}
+        />
+      )}
     </div>
   );
 }
