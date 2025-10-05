@@ -18,7 +18,7 @@ export function TreeVisualization() {
         transition={{ duration: 1, ease: "easeOut" }}
       />
 
-      {/* Leaves/Crown */}
+      {/* Main Crown */}
       <motion.div
         className="absolute bottom-24 w-64 h-64 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 opacity-90"
         initial={{ scale: 0, opacity: 0 }}
@@ -26,7 +26,7 @@ export function TreeVisualization() {
         transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
       />
 
-      {/* Additional leaf layers */}
+      {/* Side leaves - reduced from 2 to simplified version */}
       <motion.div
         className="absolute bottom-32 left-1/4 w-40 h-40 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 opacity-80"
         initial={{ scale: 0, x: -50 }}
@@ -41,8 +41,8 @@ export function TreeVisualization() {
         transition={{ duration: 1.2, delay: 0.8 }}
       />
 
-      {/* Floating particles */}
-      {[...Array(8)].map((_, i) => (
+      {/* Reduced particles from 8 to 4 */}
+      {[...Array(4)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute w-2 h-2 rounded-full bg-green-400"
@@ -54,12 +54,12 @@ export function TreeVisualization() {
           }}
           transition={{
             duration: 3,
-            delay: 1.5 + i * 0.2,
+            delay: 1.5 + i * 0.3,
             repeat: Infinity,
             repeatDelay: 2,
           }}
           style={{
-            bottom: `${100 + i * 20}px`,
+            bottom: `${100 + i * 30}px`,
             left: `calc(50% + ${(i % 3 - 1) * 40}px)`,
           }}
         />
