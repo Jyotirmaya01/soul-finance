@@ -24,6 +24,7 @@ import type * as investments from "../investments.js";
 import type * as lifeGoals from "../lifeGoals.js";
 import type * as moodJournals from "../moodJournals.js";
 import type * as newsletters from "../newsletters.js";
+import type * as portfolio from "../portfolio.js";
 import type * as profile from "../profile.js";
 import type * as seedData from "../seedData.js";
 import type * as soulScans from "../soulScans.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   lifeGoals: typeof lifeGoals;
   moodJournals: typeof moodJournals;
   newsletters: typeof newsletters;
+  portfolio: typeof portfolio;
   profile: typeof profile;
   seedData: typeof seedData;
   soulScans: typeof soulScans;
