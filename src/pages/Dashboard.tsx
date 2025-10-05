@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { convertCurrency, formatCurrency, getCurrencySymbol } from "@/lib/utils";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -43,7 +42,6 @@ export default function Dashboard() {
 
   // Get user's preferred currency, default to INR
   const userCurrency = userProfile?.currency ?? "INR";
-  const currencySymbol = getCurrencySymbol(userCurrency);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -105,14 +103,10 @@ export default function Dashboard() {
     }
 
     try {
-      // Convert amounts from user's currency to USD for storage
-      const targetAmountInUSD = convertCurrency(Number(goalAmount), userCurrency, "USD");
-      const currentAmountInUSD = convertCurrency(Number(goalCurrentAmount) || 0, userCurrency, "USD");
-
       const result = await createLifeGoal({
         title: goalTitle,
-        targetAmount: targetAmountInUSD,
-        currentAmount: currentAmountInUSD,
+        targetAmount: Number(goalAmount),
+        currentAmount: Number(goalCurrentAmount) || 0,
         targetDate: goalDate,
         category: goalCategory,
         priority: 1,
@@ -286,9 +280,6 @@ export default function Dashboard() {
                 {lifeGoals && lifeGoals.length > 0 ? (
                   <div className="space-y-3">
                     {lifeGoals.slice(0, 3).map((goal) => {
-                      // Convert goal amounts to user's currency
-                      const targetAmount = convertCurrency(goal.targetAmount, "USD", userCurrency);
-                      const currentAmount = convertCurrency(goal.currentAmount, "USD", userCurrency);
                       const percentage = Math.round((goal.currentAmount / goal.targetAmount) * 100);
 
                       return (
@@ -300,7 +291,7 @@ export default function Dashboard() {
                             </span>
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {formatCurrency(currentAmount, userCurrency)} / {formatCurrency(targetAmount, userCurrency)}
+                            ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
                           </div>
                           <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div
@@ -540,7 +531,7 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <Label htmlFor="goal-amount">Target Amount ({currencySymbol}) *</Label>
+              <Label htmlFor="goal-amount">Target Amount ({userCurrency}) *</Label>
               <Input
                 id="goal-amount"
                 type="number"
@@ -550,7 +541,7 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <Label htmlFor="goal-current">Current Amount ({currencySymbol})</Label>
+              <Label htmlFor="goal-current">Current Amount ({userCurrency})</Label>
               <Input
                 id="goal-current"
                 type="number"
