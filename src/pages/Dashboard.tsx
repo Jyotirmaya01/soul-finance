@@ -42,7 +42,7 @@ export default function Dashboard() {
   const userProfile = useQuery(api.profile.getProfile);
 
   // Get user's preferred currency, default to INR
-  const userCurrency = userProfile?.currency || "INR";
+  const userCurrency = userProfile?.currency ?? "INR";
   const currencySymbol = getCurrencySymbol(userCurrency);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function Dashboard() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading || !user || userProfile === undefined) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
 
