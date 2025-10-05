@@ -176,12 +176,6 @@ export default function Landing() {
       <footer className="border-t bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>© 2024 FinSoul. Made with 💚 for mindful investors.</p>
-          <p className="mt-2">
-            Secured by{" "}
-            <a href="https://vly.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
-              vly.ai
-            </a>
-          </p>
         </div>
       </footer>
     </div>
