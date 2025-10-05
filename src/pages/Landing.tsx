@@ -7,6 +7,7 @@ import { ArrowRight, Heart, Leaf, Shield, Sparkles, Target, Users, Mail, MapPin,
 import { useNavigate } from "react-router";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useState, useEffect } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const features = [
   { icon: Heart, title: "Peace Meter™", description: "Track your emotional relationship with money in real-time", color: "text-pink-500" },
@@ -97,6 +98,7 @@ export default function Landing() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
+            <ThemeToggle />
             {isAuthenticated && user ? (
               <Button onClick={() => navigate(user.hasCompletedQuiz ? "/dashboard" : "/soul-scan")}>
                 {user.hasCompletedQuiz ? "Dashboard" : "Continue Quiz"}

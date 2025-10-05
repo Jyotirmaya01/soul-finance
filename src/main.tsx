@@ -19,6 +19,7 @@ import Profile from "./pages/Profile.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import FinancialAstrology from "./pages/FinancialAstrology.tsx";
 import "./types/global.d.ts";
+import { ThemeProvider } from "@/hooks/use-theme.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -74,8 +75,10 @@ createRoot(document.getElementById("root")!).render(
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <RouterProvider router={router} />
-        <Toaster />
+        <ThemeProvider defaultTheme="light">
+          <RouterProvider router={router} />
+          <Toaster />
+        </ThemeProvider>
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>,
