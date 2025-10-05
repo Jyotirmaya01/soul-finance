@@ -182,6 +182,10 @@ export default function Dashboard() {
               <Target className="mr-2 h-4 w-4" />
               Calculators
             </Button>
+            <Button variant="ghost" onClick={() => navigate("/astrology")}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Astrology
+            </Button>
             <Button variant="ghost" onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout

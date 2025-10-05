@@ -17,6 +17,7 @@ import Community from "./pages/Community.tsx";
 import Calculators from "./pages/Calculators.tsx";
 import Profile from "./pages/Profile.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import FinancialAstrology from "./pages/FinancialAstrology.tsx";
 import "./types/global.d.ts";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
   {
     path: "/calculators",
     element: <Calculators />,
+  },
+  {
+    path: "/astrology",
+    element: <FinancialAstrology />,
   },
   {
     path: "*",

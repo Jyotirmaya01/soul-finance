@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as aiChat from "../aiChat.js";
+import type * as astrology from "../astrology.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as celebrations from "../celebrations.js";
@@ -38,6 +39,7 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   aiChat: typeof aiChat;
+  astrology: typeof astrology;
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   celebrations: typeof celebrations;

@@ -62,6 +62,9 @@ const schema = defineSchema(
       phoneNumber: v.optional(v.string()),
       dateOfBirth: v.optional(v.string()),
       
+      // Astrology field
+      zodiacSign: v.optional(v.string()),
+      
       // Celebration tracking
       moodStreakCount: v.optional(v.number()),
       lastMoodEntryDate: v.optional(v.string()),
