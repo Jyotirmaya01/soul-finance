@@ -20,6 +20,7 @@ import type * as auth from "../auth.js";
 import type * as celebrations from "../celebrations.js";
 import type * as circlePosts from "../circlePosts.js";
 import type * as circles from "../circles.js";
+import type * as gamification from "../gamification.js";
 import type * as http from "../http.js";
 import type * as investments from "../investments.js";
 import type * as lifeGoals from "../lifeGoals.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   celebrations: typeof celebrations;
   circlePosts: typeof circlePosts;
   circles: typeof circles;
+  gamification: typeof gamification;
   http: typeof http;
   investments: typeof investments;
   lifeGoals: typeof lifeGoals;

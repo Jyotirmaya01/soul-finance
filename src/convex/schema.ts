@@ -214,6 +214,19 @@ const schema = defineSchema(
       .index("by_circle", ["circleId"])
       .index("by_user", ["userId"])
       .index("by_circle_and_user", ["circleId", "userId"]),
+
+    // Gamification: Achievements
+    achievements: defineTable({
+      userId: v.id("users"),
+      type: v.string(),
+      title: v.string(),
+      description: v.string(),
+      points: v.number(),
+      icon: v.string(),
+      earnedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_user_and_type", ["userId", "type"]),
   },
   {
     schemaValidation: false,

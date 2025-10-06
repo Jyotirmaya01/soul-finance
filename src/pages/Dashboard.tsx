@@ -12,7 +12,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar } from "lucide-react";
+import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -190,6 +190,10 @@ export default function Dashboard() {
             <Button variant="ghost" onClick={() => navigate("/astrology")}>
               <Sparkles className="mr-2 h-4 w-4" />
               Astrology
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/achievements")}>
+              <Trophy className="mr-2 h-4 w-4" />
+              Achievements
             </Button>
             <ShareButtons 
               title="Check out my Soul Finance Dashboard!"

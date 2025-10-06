@@ -19,6 +19,7 @@ import Profile from "./pages/Profile.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import FinancialAstrology from "./pages/FinancialAstrology.tsx";
 import CircleDetail from "./pages/CircleDetail.tsx";
+import Achievements from "./pages/Achievements";
 import "./types/global.d.ts";
 import { ThemeProvider } from "@/hooks/use-theme.tsx";
 
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
   {
     path: "/astrology",
     element: <FinancialAstrology />,
+  },
+  {
+    path: "/achievements",
+    element: <Achievements />,
   },
   {
     path: "*",
