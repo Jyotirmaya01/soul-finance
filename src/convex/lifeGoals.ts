@@ -36,6 +36,17 @@ export const createLifeGoal = mutation({
         triggeredAt: Date.now(),
         metadata: { goalId },
       });
+
+      // Award achievement for first goal
+      await ctx.db.insert("achievements", {
+        userId: user._id,
+        type: "first_goal",
+        title: "Goal Setter",
+        description: "Set your first life goal",
+        points: 25,
+        icon: "🎯",
+        earnedAt: Date.now(),
+      });
     }
 
     return { goalId, shouldCelebrate: isFirstGoal };
@@ -74,6 +85,28 @@ export const updateLifeGoal = mutation({
           message: celebrationMessage,
           metadata: { goalId: args.goalId },
         });
+
+        // Award achievement for 100% completion
+        if (milestone === 100) {
+          const existing = await ctx.db
+            .query("achievements")
+            .withIndex("by_user_and_type", (q) =>
+              q.eq("userId", user._id).eq("type", "goal_completed")
+            )
+            .first();
+
+          if (!existing) {
+            await ctx.db.insert("achievements", {
+              userId: user._id,
+              type: "goal_completed",
+              title: "Goal Crusher",
+              description: "Complete a life goal",
+              points: 100,
+              icon: "🏆",
+              earnedAt: Date.now(),
+            });
+          }
+        }
         break;
       }
     }

@@ -14,6 +14,14 @@ export const addToPortfolio = mutation({
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
+    // Check if this is the first investment
+    const existingPortfolio = await ctx.db
+      .query("userPortfolio")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const isFirstInvestment = existingPortfolio.length === 0;
+
     const portfolioId = await ctx.db.insert("userPortfolio", {
       userId: user._id,
       investmentId: args.investmentId,
@@ -24,6 +32,28 @@ export const addToPortfolio = mutation({
       quantity: args.quantity,
       notes: args.notes,
     });
+
+    // Award achievement for first investment
+    if (isFirstInvestment) {
+      const existing = await ctx.db
+        .query("achievements")
+        .withIndex("by_user_and_type", (q) =>
+          q.eq("userId", user._id).eq("type", "first_investment")
+        )
+        .first();
+
+      if (!existing) {
+        await ctx.db.insert("achievements", {
+          userId: user._id,
+          type: "first_investment",
+          title: "Investor Initiate",
+          description: "Add your first investment",
+          points: 75,
+          icon: "💰",
+          earnedAt: Date.now(),
+        });
+      }
+    }
 
     return portfolioId;
   },
@@ -43,6 +73,14 @@ export const addCustomInvestment = mutation({
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
+    // Check if this is the first investment
+    const existingPortfolio = await ctx.db
+      .query("userPortfolio")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const isFirstInvestment = existingPortfolio.length === 0;
+
     const portfolioId = await ctx.db.insert("userPortfolio", {
       userId: user._id,
       investmentName: args.investmentName,
@@ -54,6 +92,28 @@ export const addCustomInvestment = mutation({
       notes: args.notes,
       isCustom: true,
     });
+
+    // Award achievement for first investment
+    if (isFirstInvestment) {
+      const existing = await ctx.db
+        .query("achievements")
+        .withIndex("by_user_and_type", (q) =>
+          q.eq("userId", user._id).eq("type", "first_investment")
+        )
+        .first();
+
+      if (!existing) {
+        await ctx.db.insert("achievements", {
+          userId: user._id,
+          type: "first_investment",
+          title: "Investor Initiate",
+          description: "Add your first investment",
+          points: 75,
+          icon: "💰",
+          earnedAt: Date.now(),
+        });
+      }
+    }
 
     return portfolioId;
   },

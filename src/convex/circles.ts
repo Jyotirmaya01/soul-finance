@@ -26,6 +26,26 @@ export const createCircle = mutation({
       joinedAt: Date.now(),
     });
 
+    // Award achievement for creating a circle
+    const existing = await ctx.db
+      .query("achievements")
+      .withIndex("by_user_and_type", (q) =>
+        q.eq("userId", user._id).eq("type", "circle_created")
+      )
+      .first();
+
+    if (!existing) {
+      await ctx.db.insert("achievements", {
+        userId: user._id,
+        type: "circle_created",
+        title: "Community Leader",
+        description: "Create a circle",
+        points: 75,
+        icon: "🌟",
+        earnedAt: Date.now(),
+      });
+    }
+
     return circleId;
   },
 });
@@ -56,6 +76,33 @@ export const joinCircle = mutation({
       await ctx.db.patch(args.circleId, {
         memberCount: circle.memberCount + 1,
       });
+    }
+
+    // Award achievement for joining first circle
+    const userCircles = await ctx.db
+      .query("circleMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    if (userCircles.length === 1) {
+      const existingAchievement = await ctx.db
+        .query("achievements")
+        .withIndex("by_user_and_type", (q) =>
+          q.eq("userId", user._id).eq("type", "circle_joined")
+        )
+        .first();
+
+      if (!existingAchievement) {
+        await ctx.db.insert("achievements", {
+          userId: user._id,
+          type: "circle_joined",
+          title: "Community Member",
+          description: "Join your first circle",
+          points: 25,
+          icon: "🤝",
+          earnedAt: Date.now(),
+        });
+      }
     }
   },
 });

@@ -39,6 +39,17 @@ export const submitSoulScan = mutation({
       dashboardTheme: getThemeForArchetype(archetype),
     });
 
+    // Award achievement for completing quiz
+    await ctx.db.insert("achievements", {
+      userId: user._id,
+      type: "quiz_completed",
+      title: "Soul Discovered",
+      description: "Complete your Soul Scan quiz",
+      points: 50,
+      icon: "✨",
+      earnedAt: Date.now(),
+    });
+
     return { archetype, peaceMeter };
   },
 });

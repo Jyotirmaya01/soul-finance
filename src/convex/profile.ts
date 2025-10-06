@@ -27,6 +27,29 @@ export const updateProfile = mutation({
 
     await ctx.db.patch(user._id, updates);
 
+    // Check if profile is complete and award achievement
+    const updatedUser = await ctx.db.get(user._id);
+    if (updatedUser && updatedUser.name && updatedUser.bio && updatedUser.phoneNumber && updatedUser.dateOfBirth) {
+      const existing = await ctx.db
+        .query("achievements")
+        .withIndex("by_user_and_type", (q) =>
+          q.eq("userId", user._id).eq("type", "profile_complete")
+        )
+        .first();
+
+      if (!existing) {
+        await ctx.db.insert("achievements", {
+          userId: user._id,
+          type: "profile_complete",
+          title: "Profile Pro",
+          description: "Complete your profile",
+          points: 50,
+          icon: "👤",
+          earnedAt: Date.now(),
+        });
+      }
+    }
+
     return { success: true };
   },
 });

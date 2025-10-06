@@ -49,6 +49,47 @@ export const createMoodEntry = mutation({
         message: `${streakCount} day streak!`,
         metadata: { streakCount },
       });
+
+      // Award achievement for mood streaks
+      if (streakCount === 7) {
+        const existing = await ctx.db
+          .query("achievements")
+          .withIndex("by_user_and_type", (q) =>
+            q.eq("userId", user._id).eq("type", "mood_streak_7")
+          )
+          .first();
+
+        if (!existing) {
+          await ctx.db.insert("achievements", {
+            userId: user._id,
+            type: "mood_streak_7",
+            title: "Week Warrior",
+            description: "Track your mood for 7 days straight",
+            points: 50,
+            icon: "💚",
+            earnedAt: Date.now(),
+          });
+        }
+      } else if (streakCount === 30) {
+        const existing = await ctx.db
+          .query("achievements")
+          .withIndex("by_user_and_type", (q) =>
+            q.eq("userId", user._id).eq("type", "mood_streak_30")
+          )
+          .first();
+
+        if (!existing) {
+          await ctx.db.insert("achievements", {
+            userId: user._id,
+            type: "mood_streak_30",
+            title: "Mood Master",
+            description: "Track your mood for 30 days straight",
+            points: 150,
+            icon: "🔥",
+            earnedAt: Date.now(),
+          });
+        }
+      }
     }
 
     const entryId = await ctx.db.insert("moodJournals", {
