@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Trophy, Award } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowLeft, Trophy, Award, HelpCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { AchievementBadge } from "@/components/gamification/AchievementBadge";
@@ -100,11 +101,22 @@ export default function Achievements() {
   const userStats = useQuery(api.gamification.getUserStats);
   const leaderboard = useQuery(api.gamification.getLeaderboard, { limit: 10 });
 
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Show help dialog on first visit
+  useEffect(() => {
+    const hasSeenHelp = localStorage.getItem("achievements_help_seen");
+    if (!hasSeenHelp && userStats !== undefined) {
+      setShowHelpDialog(true);
+      localStorage.setItem("achievements_help_seen", "true");
+    }
+  }, [userStats]);
 
   if (authLoading || userAchievements === undefined || userStats === undefined || userStats === null) {
     return <LoadingScreen message="Loading achievements..." />;
@@ -128,6 +140,101 @@ export default function Achievements() {
           <div className="w-32" />
         </div>
       </header>
+
+      {/* Floating Help Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => setShowHelpDialog(true)}
+        className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all"
+        aria-label="How to earn points"
+      >
+        <HelpCircle className="h-6 w-6" />
+      </motion.button>
+
+      {/* Help Dialog */}
+      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <Trophy className="h-6 w-6 text-yellow-600" />
+              How to Earn Points & Achievements
+            </DialogTitle>
+            <DialogDescription>
+              Complete activities to unlock achievements and level up!
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Level System */}
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-purple-600" />
+                Level System
+              </h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Every 100 points = 1 Level Up! Your level shows your overall progress and dedication.
+              </p>
+            </div>
+
+            {/* How to Earn Points */}
+            <div>
+              <h3 className="font-semibold text-lg mb-3">Ways to Earn Points:</h3>
+              <div className="grid gap-3">
+                {ALL_ACHIEVEMENTS.map((achievement) => (
+                  <div
+                    key={achievement.type}
+                    className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <div className="text-2xl">{achievement.icon}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-semibold text-sm">{achievement.title}</h4>
+                        <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded">
+                          +{achievement.points} pts
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {achievement.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tips */}
+            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <Award className="h-5 w-5 text-blue-600" />
+                Pro Tips
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Complete your Soul Scan quiz first to unlock your archetype</li>
+                <li>• Track your mood daily to build streaks and earn bonus points</li>
+                <li>• Set and complete life goals for the highest point rewards</li>
+                <li>• Join communities to connect with others and earn achievements</li>
+                <li>• Complete your profile to show you're serious about your financial journey</li>
+              </ul>
+            </div>
+
+            {/* Leaderboard Info */}
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <h3 className="font-semibold text-lg mb-2">🏆 Leaderboard</h3>
+              <p className="text-sm text-muted-foreground">
+                Compete with other Soul Finance users! The leaderboard shows the top achievers based on total points earned.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowHelpDialog(false)} className="gap-2">
+              Got it!
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="container mx-auto px-4 py-8">
         <motion.div
