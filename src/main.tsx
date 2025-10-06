@@ -18,6 +18,7 @@ import Calculators from "./pages/Calculators.tsx";
 import Profile from "./pages/Profile.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import FinancialAstrology from "./pages/FinancialAstrology.tsx";
+import CircleDetail from "./pages/CircleDetail.tsx";
 import "./types/global.d.ts";
 import { ThemeProvider } from "@/hooks/use-theme.tsx";
 
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
   {
     path: "/community",
     element: <Community />,
+  },
+  {
+    path: "/community/:circleId",
+    element: <CircleDetail />,
   },
   {
     path: "/profile",

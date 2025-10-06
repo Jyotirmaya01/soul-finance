@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
@@ -25,8 +26,10 @@ export default function Community() {
   const [circleDescription, setCircleDescription] = useState("");
   const [circleType, setCircleType] = useState("mutual_fund");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
 
   const publicCircles = useQuery(api.circles.getPublicCircles);
+  const userCircles = useQuery(api.circles.getUserCircles);
   const searchResults = useQuery(
     api.circles.searchCircles,
     searchQuery ? { searchTerm: searchQuery } : "skip"
@@ -56,7 +59,7 @@ export default function Community() {
     }
 
     try {
-      await createCircle({
+      const circleId = await createCircle({
         name: circleName,
         description: circleDescription,
         communityType: circleType,
@@ -69,12 +72,18 @@ export default function Community() {
       setCircleDescription("");
       setCircleType("mutual_fund");
       setIsPrivate(false);
+      
+      // Navigate to the new circle
+      if (circleId) {
+        navigate(`/community/${circleId}`);
+      }
     } catch (error) {
       toast.error("Failed to create circle");
     }
   };
 
-  const filteredCircles = searchQuery ? searchResults : publicCircles;
+  const displayCircles = activeTab === "my" ? userCircles : (searchQuery ? searchResults : publicCircles);
+  const userCircleIds = new Set(userCircles?.map(c => c._id) || []);
 
   if (authLoading) {
     return <LoadingScreen message="Loading community..." />;
@@ -119,6 +128,27 @@ export default function Community() {
           <p className="text-muted-foreground">
             Join communities of like-minded investors and learners
           </p>
+        </motion.div>
+
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="flex gap-2 mb-6"
+        >
+          <Button
+            variant={activeTab === "all" ? "default" : "outline"}
+            onClick={() => setActiveTab("all")}
+          >
+            All Communities
+          </Button>
+          <Button
+            variant={activeTab === "my" ? "default" : "outline"}
+            onClick={() => setActiveTab("my")}
+          >
+            My Communities ({userCircles?.length || 0})
+          </Button>
         </motion.div>
 
         {/* Search and Create */}
@@ -215,38 +245,54 @@ export default function Community() {
 
         {/* Circles Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCircles?.map((circle, index) => (
-            <motion.div
-              key={circle._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            >
-              <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-500" />
-                    {circle.name}
-                  </CardTitle>
-                  <CardDescription>{circle.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {circle.memberCount} members
-                    </span>
-                    <Button size="sm" onClick={() => handleJoinCircle(circle._id)}>
-                      Join
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          {displayCircles?.map((circle, index) => {
+            const isJoined = userCircleIds.has(circle._id);
+            return (
+              <motion.div
+                key={circle._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                onClick={() => navigate(`/community/${circle._id}`)}
+                className="cursor-pointer"
+              >
+                <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 h-full hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-blue-500" />
+                      {circle.name}
+                      {isJoined && (
+                        <Badge variant="secondary" className="ml-auto">Joined</Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription>{circle.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {circle.memberCount} members
+                      </span>
+                      {!isJoined && (
+                        <Button 
+                          size="sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleJoinCircle(circle._id);
+                          }}
+                        >
+                          Join
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {filteredCircles && filteredCircles.length === 0 && (
+        {displayCircles && displayCircles.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -254,14 +300,18 @@ export default function Community() {
           >
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 text-center py-12">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold">No Circles Found</CardTitle>
+                <CardTitle className="text-xl font-semibold">
+                  {activeTab === "my" ? "No Circles Joined Yet" : "No Circles Found"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  We couldn't find any circles matching your search.
+                  {activeTab === "my" 
+                    ? "Join some circles to get started!" 
+                    : "We couldn't find any circles matching your search."}
                 </p>
-                <Button onClick={() => setSearchQuery("")} className="w-full">
-                  Clear Search
+                <Button onClick={() => activeTab === "my" ? setActiveTab("all") : setSearchQuery("")} className="w-full">
+                  {activeTab === "my" ? "Browse All Circles" : "Clear Search"}
                 </Button>
               </CardContent>
             </Card>

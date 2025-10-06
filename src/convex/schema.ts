@@ -187,6 +187,33 @@ const schema = defineSchema(
       subscribedAt: v.number(),
       isActive: v.boolean(),
     }).index("by_email", ["email"]),
+
+    // Community Posts
+    circlePosts: defineTable({
+      circleId: v.id("circles"),
+      userId: v.id("users"),
+      content: v.string(),
+      imageUrl: v.optional(v.string()),
+      createdAt: v.number(),
+      isApproved: v.boolean(),
+      approvedBy: v.optional(v.id("users")),
+      approvedAt: v.optional(v.number()),
+    })
+      .index("by_circle", ["circleId"])
+      .index("by_user", ["userId"])
+      .index("by_circle_and_approved", ["circleId", "isApproved"]),
+
+    // Circle Admins
+    circleAdmins: defineTable({
+      circleId: v.id("circles"),
+      userId: v.id("users"),
+      role: v.string(), // "creator", "admin", "moderator"
+      assignedAt: v.number(),
+      assignedBy: v.optional(v.id("users")),
+    })
+      .index("by_circle", ["circleId"])
+      .index("by_user", ["userId"])
+      .index("by_circle_and_user", ["circleId", "userId"]),
   },
   {
     schemaValidation: false,

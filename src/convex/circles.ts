@@ -60,6 +60,50 @@ export const joinCircle = mutation({
   },
 });
 
+export const leaveCircle = mutation({
+  args: { circleId: v.id("circles") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const circle = await ctx.db.get(args.circleId);
+    if (!circle) throw new Error("Circle not found");
+
+    // Cannot leave if you're the creator
+    if (circle.creatorId === user._id) {
+      throw new Error("Circle creator cannot leave the circle");
+    }
+
+    const membership = await ctx.db
+      .query("circleMembers")
+      .withIndex("by_circle_and_user", (q) =>
+        q.eq("circleId", args.circleId).eq("userId", user._id)
+      )
+      .first();
+
+    if (membership) {
+      await ctx.db.delete(membership._id);
+
+      // Update member count
+      await ctx.db.patch(args.circleId, {
+        memberCount: Math.max(0, circle.memberCount - 1),
+      });
+
+      // Remove admin role if exists
+      const adminRecord = await ctx.db
+        .query("circleAdmins")
+        .withIndex("by_circle_and_user", (q) =>
+          q.eq("circleId", args.circleId).eq("userId", user._id)
+        )
+        .first();
+
+      if (adminRecord) {
+        await ctx.db.delete(adminRecord._id);
+      }
+    }
+  },
+});
+
 export const getPublicCircles = query({
   args: {},
   handler: async (ctx) => {
