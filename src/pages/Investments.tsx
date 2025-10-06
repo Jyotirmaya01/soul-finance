@@ -18,6 +18,7 @@ import { AddCustomInvestmentDialog } from "@/components/investments/AddCustomInv
 import { EditPortfolioDialog } from "@/components/investments/EditPortfolioDialog";
 import { toast } from "sonner";
 import type { Id } from "@/convex/_generated/dataModel";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -89,7 +90,14 @@ export default function Investments() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Investments</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold">Investments</h1>
+            <ShareButtons 
+              title="Check out my Investment Portfolio on Soul Finance!"
+              description="I'm building wealth that aligns with my values using Soul Finance"
+              hashtags={["Investing", "FinancialFreedom", "ESG", "FinTech"]}
+            />
+          </div>
           <ProfileDropdown />
         </div>
       </header>

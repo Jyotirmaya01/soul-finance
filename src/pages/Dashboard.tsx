@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -190,6 +191,11 @@ export default function Dashboard() {
               <Sparkles className="mr-2 h-4 w-4" />
               Astrology
             </Button>
+            <ShareButtons 
+              title="Check out my Soul Finance Dashboard!"
+              description="I'm tracking my financial journey with Soul Finance - discover your financial archetype too!"
+              hashtags={["FinancialWellness", "PersonalFinance", "FinTech"]}
+            />
             <Button variant="ghost" onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ShareButtons } from "@/components/ShareButtons";
 
 const features = [
   { icon: Heart, title: "Peace Meter™", description: "Track your emotional relationship with money in real-time", color: "text-pink-500" },
@@ -98,6 +99,11 @@ export default function Landing() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
+            <ShareButtons 
+              title="Soul Finance - Your Financial Companion"
+              description="Discover your financial archetype and build wealth that aligns with your values"
+              hashtags={["FinTech", "FinancialWellness", "AI", "PersonalFinance"]}
+            />
             <ThemeToggle />
             {isAuthenticated && user ? (
               <Button onClick={() => navigate(user.hasCompletedQuiz ? "/dashboard" : "/soul-scan")}>
@@ -597,9 +603,20 @@ export default function Landing() {
         viewport={{ once: true }}
         className="border-t bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm py-8"
       >
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2024 FinSoul. Made with 💚 for mindful investors.</p>
-          <p className="mt-2">Powered by FinSoul • Secured by FinSoul</p>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left text-sm text-muted-foreground">
+              <p>© 2024 FinSoul. Made with 💚 for mindful investors.</p>
+              <p className="mt-2">Powered by FinSoul • Secured by FinSoul</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <ShareButtons 
+                title="Soul Finance - Your Financial Companion"
+                description="Discover your financial archetype and build wealth that aligns with your values"
+                hashtags={["FinTech", "FinancialWellness", "AI", "PersonalFinance"]}
+              />
+            </div>
+          </div>
         </div>
       </motion.footer>
     </div>
