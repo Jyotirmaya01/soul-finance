@@ -1,6 +1,4 @@
-import { PeaceMeter } from "@/components/PeaceMeter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +10,16 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar, Trophy, HelpCircle, Bot } from "lucide-react";
+import { BookHeart, MessageCircle, Sparkles, Target, TrendingUp, Calendar, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { ShareButtons } from "@/components/ShareButtons";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { TutorialDialog } from "@/components/dashboard/TutorialDialog";
+import { PeaceMeterCard } from "@/components/dashboard/PeaceMeterCard";
+import { ValuesCard } from "@/components/dashboard/ValuesCard";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -43,7 +45,6 @@ export default function Dashboard() {
   const createLifeGoal = useMutation(api.lifeGoals.createLifeGoal);
   const userProfile = useQuery(api.profile.getProfile);
 
-  // Get user's preferred currency, default to INR
   const userCurrency = userProfile?.currency ?? "INR";
 
   useEffect(() => {
@@ -58,7 +59,6 @@ export default function Dashboard() {
     }
   }, [user, navigate]);
 
-  // Show tutorial on first visit
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem("dashboard_tutorial_seen");
     if (!hasSeenTutorial && user && userProfile !== undefined) {
@@ -67,46 +67,8 @@ export default function Dashboard() {
     }
   }, [user, userProfile]);
 
-  const tutorialSteps = [
-    {
-      title: "Welcome to Your Dashboard! 🎉",
-      description: "Let me show you around your financial soul companion. I'm here to help you understand everything!",
-      icon: <Bot className="h-12 w-12 text-purple-500" />,
-    },
-    {
-      title: "Meet Your AI Coach 🤖",
-      description: "Your AI Coach is available 24/7 to provide personalized financial guidance. It understands your unique financial personality and offers compassionate, context-aware advice tailored just for you. Click the 'Start Conversation' button anytime to chat!",
-      icon: <Sparkles className="h-12 w-12 text-indigo-500" />,
-    },
-    {
-      title: "Track Your Peace Meter 💚",
-      description: "Your Peace Meter reflects your emotional relationship with money. It's calculated based on your financial fears and dreams. Keep nurturing it through mindful financial decisions!",
-      icon: <Heart className="h-12 w-12 text-pink-500" />,
-    },
-    {
-      title: "Investments Page 📈",
-      description: "Discover values-aligned investment opportunities matched to your financial archetype. Track your portfolio, add investments, and monitor your financial growth in real-time.",
-      icon: <TrendingUp className="h-12 w-12 text-green-500" />,
-    },
-    {
-      title: "Community Circles 👥",
-      description: "Join or create financial circles to connect with like-minded individuals. Share experiences, learn from others, and grow together on your financial journey.",
-      icon: <Users className="h-12 w-12 text-blue-500" />,
-    },
-    {
-      title: "Financial Calculators 🧮",
-      description: "Access powerful tools like SIP, EMI, and Retirement calculators to plan your financial future with confidence and clarity.",
-      icon: <Target className="h-12 w-12 text-orange-500" />,
-    },
-    {
-      title: "Achievements & Gamification 🏆",
-      description: "Earn points and unlock achievements as you progress on your financial journey. Track your level, compete on the leaderboard, and celebrate your milestones!",
-      icon: <Trophy className="h-12 w-12 text-yellow-500" />,
-    },
-  ];
-
   const handleNextStep = () => {
-    if (tutorialStep < tutorialSteps.length - 1) {
+    if (tutorialStep < 6) {
       setTutorialStep(tutorialStep + 1);
     } else {
       setShowTutorial(false);
@@ -150,7 +112,6 @@ export default function Dashboard() {
       setJournalNote("");
       setSelectedMood("");
 
-      // Trigger celebration if streak milestone
       if (result.shouldCelebrate) {
         setCelebrationType("mood_streak");
         setCelebrationMessage(`${result.streakCount} day streak! Keep it up! 🔥`);
@@ -185,7 +146,6 @@ export default function Dashboard() {
       setGoalDate("");
       setGoalCategory("savings");
 
-      // Trigger celebration if first goal
       if (result.shouldCelebrate) {
         setCelebrationType("first_goal");
         setShowCelebration(true);
@@ -244,142 +204,16 @@ export default function Dashboard() {
       </motion.button>
 
       {/* Tutorial Dialog */}
-      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <div className="flex items-center justify-center mb-4">
-              <motion.div
-                key={tutorialStep}
-                initial={{ scale: 0, rotate: -180, opacity: 0 }}
-                animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                exit={{ scale: 0, rotate: 180, opacity: 0 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 260, 
-                  damping: 20,
-                  duration: 0.5 
-                }}
-              >
-                <motion.div
-                  animate={{ 
-                    y: [0, -10, 0],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                >
-                  {tutorialSteps[tutorialStep]?.icon}
-                </motion.div>
-              </motion.div>
-            </div>
-            <motion.div
-              key={`title-${tutorialStep}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-            >
-              <DialogTitle className="text-2xl text-center">
-                {tutorialSteps[tutorialStep]?.title}
-              </DialogTitle>
-            </motion.div>
-            <motion.div
-              key={`desc-${tutorialStep}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-            >
-              <DialogDescription className="text-center text-base leading-relaxed pt-4">
-                {tutorialSteps[tutorialStep]?.description}
-              </DialogDescription>
-            </motion.div>
-          </DialogHeader>
-
-          <div className="flex items-center justify-center gap-2 py-4">
-            {tutorialSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-2 rounded-full transition-all ${
-                  index === tutorialStep
-                    ? "w-8 bg-purple-500"
-                    : "w-2 bg-gray-300 dark:bg-gray-600"
-                }`}
-              />
-            ))}
-          </div>
-
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={handlePrevStep}
-              disabled={tutorialStep === 0}
-            >
-              Previous
-            </Button>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setShowTutorial(false);
-                  setTutorialStep(0);
-                }}
-              >
-                Skip
-              </Button>
-              <Button onClick={handleNextStep}>
-                {tutorialStep === tutorialSteps.length - 1 ? "Get Started!" : "Next"}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TutorialDialog
+        open={showTutorial}
+        onOpenChange={setShowTutorial}
+        currentStep={tutorialStep}
+        onNextStep={handleNextStep}
+        onPrevStep={handlePrevStep}
+      />
 
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="FinSoul" className="h-8 w-8 cursor-pointer" onClick={() => navigate("/")} />
-            <h1 className="text-xl font-bold">FinSoul</h1>
-          </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-              <Heart className="mr-2 h-4 w-4" />
-              Home
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/investments")}>
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Investments
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/community")}>
-              <Users className="mr-2 h-4 w-4" />
-              Community
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/calculators")}>
-              <Target className="mr-2 h-4 w-4" />
-              Calculators
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/astrology")}>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Astrology
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/achievements")}>
-              <Trophy className="mr-2 h-4 w-4" />
-              Achievements
-            </Button>
-            <ShareButtons 
-              title="Check out my Soul Finance Dashboard!"
-              description="I'm tracking my financial journey with Soul Finance - discover your financial archetype too!"
-              hashtags={["FinancialWellness", "PersonalFinance", "FinTech"]}
-            />
-            <Button variant="ghost" onClick={() => signOut()}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <DashboardHeader onSignOut={signOut} />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
@@ -398,53 +232,10 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Peace Meter */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="text-pink-500" />
-                  Your Peace
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <PeaceMeter score={user.peaceMeter || 50} size="md" />
-                <Button variant="outline" className="mt-4 w-full" size="sm">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Take a Breath
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <PeaceMeterCard peaceMeter={user.peaceMeter || 50} />
 
           {/* Values Tracker */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="text-blue-500" />
-                  Your Values
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {user.topValues?.slice(0, 3).map((value, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      <span className="text-sm">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <ValuesCard topValues={user.topValues} />
 
           {/* Life Goals */}
           <motion.div
