@@ -249,18 +249,52 @@ export default function Dashboard() {
           <DialogHeader>
             <div className="flex items-center justify-center mb-4">
               <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                key={tutorialStep}
+                initial={{ scale: 0, rotate: -180, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0, rotate: 180, opacity: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  duration: 0.5 
+                }}
               >
-                {tutorialSteps[tutorialStep]?.icon}
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  {tutorialSteps[tutorialStep]?.icon}
+                </motion.div>
               </motion.div>
             </div>
-            <DialogTitle className="text-2xl text-center">
-              {tutorialSteps[tutorialStep]?.title}
-            </DialogTitle>
-            <DialogDescription className="text-center text-base leading-relaxed pt-4">
-              {tutorialSteps[tutorialStep]?.description}
-            </DialogDescription>
+            <motion.div
+              key={`title-${tutorialStep}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
+              <DialogTitle className="text-2xl text-center">
+                {tutorialSteps[tutorialStep]?.title}
+              </DialogTitle>
+            </motion.div>
+            <motion.div
+              key={`desc-${tutorialStep}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              <DialogDescription className="text-center text-base leading-relaxed pt-4">
+                {tutorialSteps[tutorialStep]?.description}
+              </DialogDescription>
+            </motion.div>
           </DialogHeader>
 
           <div className="flex items-center justify-center gap-2 py-4">
