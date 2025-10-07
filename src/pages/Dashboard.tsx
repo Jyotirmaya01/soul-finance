@@ -12,7 +12,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar, Trophy } from "lucide-react";
+import { BookHeart, Heart, LogOut, MessageCircle, Sparkles, Target, TrendingUp, Users, Calendar, Trophy, HelpCircle, Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -34,6 +34,8 @@ export default function Dashboard() {
   const [celebrationType, setCelebrationType] = useState<CelebrationType | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationMessage, setCelebrationMessage] = useState<string | undefined>();
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   const lifeGoals = useQuery(api.lifeGoals.getUserLifeGoals);
   const moodJournals = useQuery(api.moodJournals.getUserMoodJournals, { limit: 5 });
@@ -55,6 +57,68 @@ export default function Dashboard() {
       navigate("/soul-scan");
     }
   }, [user, navigate]);
+
+  // Show tutorial on first visit
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem("dashboard_tutorial_seen");
+    if (!hasSeenTutorial && user && userProfile !== undefined) {
+      setShowTutorial(true);
+      localStorage.setItem("dashboard_tutorial_seen", "true");
+    }
+  }, [user, userProfile]);
+
+  const tutorialSteps = [
+    {
+      title: "Welcome to Your Dashboard! 🎉",
+      description: "Let me show you around your financial soul companion. I'm here to help you understand everything!",
+      icon: <Bot className="h-12 w-12 text-purple-500" />,
+    },
+    {
+      title: "Meet Your AI Coach 🤖",
+      description: "Your AI Coach is available 24/7 to provide personalized financial guidance. It understands your unique financial personality and offers compassionate, context-aware advice tailored just for you. Click the 'Start Conversation' button anytime to chat!",
+      icon: <Sparkles className="h-12 w-12 text-indigo-500" />,
+    },
+    {
+      title: "Track Your Peace Meter 💚",
+      description: "Your Peace Meter reflects your emotional relationship with money. It's calculated based on your financial fears and dreams. Keep nurturing it through mindful financial decisions!",
+      icon: <Heart className="h-12 w-12 text-pink-500" />,
+    },
+    {
+      title: "Investments Page 📈",
+      description: "Discover values-aligned investment opportunities matched to your financial archetype. Track your portfolio, add investments, and monitor your financial growth in real-time.",
+      icon: <TrendingUp className="h-12 w-12 text-green-500" />,
+    },
+    {
+      title: "Community Circles 👥",
+      description: "Join or create financial circles to connect with like-minded individuals. Share experiences, learn from others, and grow together on your financial journey.",
+      icon: <Users className="h-12 w-12 text-blue-500" />,
+    },
+    {
+      title: "Financial Calculators 🧮",
+      description: "Access powerful tools like SIP, EMI, and Retirement calculators to plan your financial future with confidence and clarity.",
+      icon: <Target className="h-12 w-12 text-orange-500" />,
+    },
+    {
+      title: "Achievements & Gamification 🏆",
+      description: "Earn points and unlock achievements as you progress on your financial journey. Track your level, compete on the leaderboard, and celebrate your milestones!",
+      icon: <Trophy className="h-12 w-12 text-yellow-500" />,
+    },
+  ];
+
+  const handleNextStep = () => {
+    if (tutorialStep < tutorialSteps.length - 1) {
+      setTutorialStep(tutorialStep + 1);
+    } else {
+      setShowTutorial(false);
+      setTutorialStep(0);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (tutorialStep > 0) {
+      setTutorialStep(tutorialStep - 1);
+    }
+  };
 
   const moods = [
     { emoji: "😊", label: "Great", value: "great" },
@@ -163,6 +227,81 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Floating Help Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        onClick={() => {
+          setShowTutorial(true);
+          setTutorialStep(0);
+        }}
+        className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all"
+        aria-label="Show tutorial"
+        title="Need help? Click for a guided tour!"
+      >
+        <HelpCircle className="h-6 w-6" />
+      </motion.button>
+
+      {/* Tutorial Dialog */}
+      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                {tutorialSteps[tutorialStep]?.icon}
+              </motion.div>
+            </div>
+            <DialogTitle className="text-2xl text-center">
+              {tutorialSteps[tutorialStep]?.title}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base leading-relaxed pt-4">
+              {tutorialSteps[tutorialStep]?.description}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-center gap-2 py-4">
+            {tutorialSteps.map((_, index) => (
+              <div
+                key={index}
+                className={`h-2 rounded-full transition-all ${
+                  index === tutorialStep
+                    ? "w-8 bg-purple-500"
+                    : "w-2 bg-gray-300 dark:bg-gray-600"
+                }`}
+              />
+            ))}
+          </div>
+
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevStep}
+              disabled={tutorialStep === 0}
+            >
+              Previous
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowTutorial(false);
+                  setTutorialStep(0);
+                }}
+              >
+                Skip
+              </Button>
+              <Button onClick={handleNextStep}>
+                {tutorialStep === tutorialSteps.length - 1 ? "Get Started!" : "Next"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
