@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function MutualFundCalculator() {
@@ -9,6 +9,22 @@ export function MutualFundCalculator() {
   const [mfRate, setMfRate] = useState(12);
   const [mfYears, setMfYears] = useState(10);
   const [mfType, setMfType] = useState<"lumpsum" | "sip">("lumpsum");
+
+  // Debounced values
+  const [debouncedInvestment, setDebouncedInvestment] = useState(mfInvestment);
+  const [debouncedRate, setDebouncedRate] = useState(mfRate);
+  const [debouncedYears, setDebouncedYears] = useState(mfYears);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedInvestment(mfInvestment);
+      setDebouncedRate(mfRate);
+      setDebouncedYears(mfYears);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [mfInvestment, mfRate, mfYears]);
 
   const validatePositiveNumber = (value: number, min: number = 0) => {
     return !isNaN(value) && value > min;
@@ -23,36 +39,36 @@ export function MutualFundCalculator() {
   };
 
   const calculateMutualFund = () => {
-    if (!validatePositiveNumber(mfInvestment, 0) || !validateRate(mfRate) || !validateYears(mfYears)) {
+    if (!validatePositiveNumber(debouncedInvestment, 0) || !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { futureValue: 0, invested: 0, returns: 0, yearlyData: [] };
     }
     if (mfType === "lumpsum") {
-      const futureValue = mfInvestment * Math.pow(1 + mfRate / 100, mfYears);
-      const returns = futureValue - mfInvestment;
+      const futureValue = debouncedInvestment * Math.pow(1 + debouncedRate / 100, debouncedYears);
+      const returns = futureValue - debouncedInvestment;
       
       const yearlyData = [];
-      for (let year = 1; year <= mfYears; year++) {
-        const value = mfInvestment * Math.pow(1 + mfRate / 100, year);
+      for (let year = 1; year <= debouncedYears; year++) {
+        const value = debouncedInvestment * Math.pow(1 + debouncedRate / 100, year);
         yearlyData.push({
           year: `Year ${year}`,
           value: Math.round(value),
-          invested: mfInvestment,
+          invested: debouncedInvestment,
         });
       }
       
-      return { futureValue, invested: mfInvestment, returns, yearlyData };
+      return { futureValue, invested: debouncedInvestment, returns, yearlyData };
     } else {
-      const monthlyRate = mfRate / 12 / 100;
-      const months = mfYears * 12;
-      const futureValue = mfInvestment * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
-      const invested = mfInvestment * months;
+      const monthlyRate = debouncedRate / 12 / 100;
+      const months = debouncedYears * 12;
+      const futureValue = debouncedInvestment * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
+      const invested = debouncedInvestment * months;
       const returns = futureValue - invested;
       
       const yearlyData = [];
-      for (let year = 1; year <= mfYears; year++) {
+      for (let year = 1; year <= debouncedYears; year++) {
         const monthsElapsed = year * 12;
-        const value = mfInvestment * (((Math.pow(1 + monthlyRate, monthsElapsed) - 1) / monthlyRate) * (1 + monthlyRate));
-        const investedAmount = mfInvestment * monthsElapsed;
+        const value = debouncedInvestment * (((Math.pow(1 + monthlyRate, monthsElapsed) - 1) / monthlyRate) * (1 + monthlyRate));
+        const investedAmount = debouncedInvestment * monthsElapsed;
         yearlyData.push({
           year: `Year ${year}`,
           value: Math.round(value),
@@ -64,7 +80,7 @@ export function MutualFundCalculator() {
     }
   };
 
-  const mfResult = calculateMutualFund();
+  const mfResult = useMemo(() => calculateMutualFund(), [debouncedInvestment, debouncedRate, debouncedYears, mfType]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

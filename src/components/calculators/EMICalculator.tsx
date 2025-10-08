@@ -1,11 +1,27 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export function EMICalculator() {
   const [loanAmount, setLoanAmount] = useState(1000000);
   const [loanRate, setLoanRate] = useState(8.5);
   const [loanYears, setLoanYears] = useState(20);
+
+  // Debounced values
+  const [debouncedAmount, setDebouncedAmount] = useState(loanAmount);
+  const [debouncedRate, setDebouncedRate] = useState(loanRate);
+  const [debouncedYears, setDebouncedYears] = useState(loanYears);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAmount(loanAmount);
+      setDebouncedRate(loanRate);
+      setDebouncedYears(loanYears);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [loanAmount, loanRate, loanYears]);
 
   const validatePositiveNumber = (value: number, min: number = 0) => {
     return !isNaN(value) && value > min;
@@ -20,18 +36,18 @@ export function EMICalculator() {
   };
 
   const calculateEMI = () => {
-    if (!validatePositiveNumber(loanAmount, 0) || !validateRate(loanRate) || !validateYears(loanYears)) {
+    if (!validatePositiveNumber(debouncedAmount, 0) || !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { emi: 0, totalAmount: 0, totalInterest: 0 };
     }
-    const monthlyRate = loanRate / 12 / 100;
-    const months = loanYears * 12;
-    const emi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+    const monthlyRate = debouncedRate / 12 / 100;
+    const months = debouncedYears * 12;
+    const emi = debouncedAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
     const totalAmount = emi * months;
-    const totalInterest = totalAmount - loanAmount;
+    const totalInterest = totalAmount - debouncedAmount;
     return { emi, totalAmount, totalInterest };
   };
 
-  const emiResult = calculateEMI();
+  const emiResult = useMemo(() => calculateEMI(), [debouncedAmount, debouncedRate, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

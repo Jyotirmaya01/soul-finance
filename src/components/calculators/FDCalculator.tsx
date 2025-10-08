@@ -1,11 +1,27 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export function FDCalculator() {
   const [fdPrincipal, setFdPrincipal] = useState(100000);
   const [fdRate, setFdRate] = useState(6.5);
   const [fdYears, setFdYears] = useState(5);
+
+  // Debounced values
+  const [debouncedPrincipal, setDebouncedPrincipal] = useState(fdPrincipal);
+  const [debouncedRate, setDebouncedRate] = useState(fdRate);
+  const [debouncedYears, setDebouncedYears] = useState(fdYears);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPrincipal(fdPrincipal);
+      setDebouncedRate(fdRate);
+      setDebouncedYears(fdYears);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [fdPrincipal, fdRate, fdYears]);
 
   const validatePositiveNumber = (value: number, min: number = 0) => {
     return !isNaN(value) && value > min;
@@ -20,15 +36,15 @@ export function FDCalculator() {
   };
 
   const calculateFD = () => {
-    if (!validatePositiveNumber(fdPrincipal, 0) || !validateRate(fdRate) || !validateYears(fdYears)) {
+    if (!validatePositiveNumber(debouncedPrincipal, 0) || !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { maturityAmount: 0, interest: 0 };
     }
-    const amount = fdPrincipal * Math.pow(1 + fdRate / 100, fdYears);
-    const interest = amount - fdPrincipal;
+    const amount = debouncedPrincipal * Math.pow(1 + debouncedRate / 100, debouncedYears);
+    const interest = amount - debouncedPrincipal;
     return { maturityAmount: amount, interest };
   };
 
-  const fdResult = calculateFD();
+  const fdResult = useMemo(() => calculateFD(), [debouncedPrincipal, debouncedRate, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

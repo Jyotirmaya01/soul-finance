@@ -1,12 +1,26 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 export function GratuityCalculator() {
   const [monthlySalary, setMonthlySalary] = useState(50000);
   const [yearsOfService, setYearsOfService] = useState(10);
+
+  // Debounced values
+  const [debouncedSalary, setDebouncedSalary] = useState(monthlySalary);
+  const [debouncedYears, setDebouncedYears] = useState(yearsOfService);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSalary(monthlySalary);
+      setDebouncedYears(yearsOfService);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [monthlySalary, yearsOfService]);
 
   const validateSalary = (value: number) => {
     return !isNaN(value) && value > 0 && value <= 10000000;
@@ -17,23 +31,22 @@ export function GratuityCalculator() {
   };
 
   const calculateGratuity = () => {
-    if (!validateSalary(monthlySalary) || !validateYears(yearsOfService)) {
+    if (!validateSalary(debouncedSalary) || !validateYears(debouncedYears)) {
       return { gratuityAmount: 0, isEligible: false };
     }
 
-    const isEligible = yearsOfService >= 5;
+    const isEligible = debouncedYears >= 5;
     
     if (!isEligible) {
       return { gratuityAmount: 0, isEligible: false };
     }
 
-    // Formula: (Last drawn salary × 15 × years of service) / 26
-    const gratuityAmount = (monthlySalary * 15 * yearsOfService) / 26;
+    const gratuityAmount = (debouncedSalary * 15 * debouncedYears) / 26;
 
     return { gratuityAmount, isEligible };
   };
 
-  const result = calculateGratuity();
+  const result = useMemo(() => calculateGratuity(), [debouncedSalary, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

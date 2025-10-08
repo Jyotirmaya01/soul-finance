@@ -1,12 +1,26 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function PPFCalculator() {
   const [yearlyInvestment, setYearlyInvestment] = useState(100000);
   const [years, setYears] = useState(15);
-  const [rate] = useState(7.1); // Current PPF rate
+  const [rate] = useState(7.1);
+
+  // Debounced values
+  const [debouncedYearlyInvestment, setDebouncedYearlyInvestment] = useState(yearlyInvestment);
+  const [debouncedYears, setDebouncedYears] = useState(years);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedYearlyInvestment(yearlyInvestment);
+      setDebouncedYears(years);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [yearlyInvestment, years]);
 
   const validateYearlyInvestment = (value: number) => {
     return !isNaN(value) && value > 0 && value <= 150000;
@@ -17,29 +31,29 @@ export function PPFCalculator() {
   };
 
   const calculatePPF = () => {
-    if (!validateYearlyInvestment(yearlyInvestment) || !validateYears(years)) {
+    if (!validateYearlyInvestment(debouncedYearlyInvestment) || !validateYears(debouncedYears)) {
       return { maturityAmount: 0, totalInvestment: 0, interest: 0, yearlyData: [] };
     }
 
     let balance = 0;
     const yearlyData = [];
 
-    for (let year = 1; year <= years; year++) {
-      balance = (balance + yearlyInvestment) * (1 + rate / 100);
+    for (let year = 1; year <= debouncedYears; year++) {
+      balance = (balance + debouncedYearlyInvestment) * (1 + rate / 100);
       yearlyData.push({
         year: `Year ${year}`,
         balance: Math.round(balance),
-        invested: yearlyInvestment * year,
+        invested: debouncedYearlyInvestment * year,
       });
     }
 
-    const totalInvestment = yearlyInvestment * years;
+    const totalInvestment = debouncedYearlyInvestment * debouncedYears;
     const interest = balance - totalInvestment;
 
     return { maturityAmount: balance, totalInvestment, interest, yearlyData };
   };
 
-  const result = calculatePPF();
+  const result = useMemo(() => calculatePPF(), [debouncedYearlyInvestment, debouncedYears, rate]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

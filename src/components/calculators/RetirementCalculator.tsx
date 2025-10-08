@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function RetirementCalculator() {
@@ -8,6 +8,24 @@ export function RetirementCalculator() {
   const [retirementAge, setRetirementAge] = useState(60);
   const [monthlyExpense, setMonthlyExpense] = useState(50000);
   const [inflation, setInflation] = useState(6);
+
+  // Debounced values
+  const [debouncedCurrentAge, setDebouncedCurrentAge] = useState(currentAge);
+  const [debouncedRetirementAge, setDebouncedRetirementAge] = useState(retirementAge);
+  const [debouncedExpense, setDebouncedExpense] = useState(monthlyExpense);
+  const [debouncedInflation, setDebouncedInflation] = useState(inflation);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedCurrentAge(currentAge);
+      setDebouncedRetirementAge(retirementAge);
+      setDebouncedExpense(monthlyExpense);
+      setDebouncedInflation(inflation);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [currentAge, retirementAge, monthlyExpense, inflation]);
 
   const validateAge = (age: number) => {
     return !isNaN(age) && age >= 18 && age <= 100;
@@ -22,12 +40,12 @@ export function RetirementCalculator() {
   };
 
   const calculateRetirement = () => {
-    if (!validateAge(currentAge) || !validateAge(retirementAge) || retirementAge <= currentAge || 
-        !validatePositiveNumber(monthlyExpense, 0) || !validateRate(inflation)) {
+    if (!validateAge(debouncedCurrentAge) || !validateAge(debouncedRetirementAge) || debouncedRetirementAge <= debouncedCurrentAge || 
+        !validatePositiveNumber(debouncedExpense, 0) || !validateRate(debouncedInflation)) {
       return { corpusNeeded: 0, futureExpense: 0, sipNeeded: 0, ageData: [] };
     }
-    const yearsToRetirement = retirementAge - currentAge;
-    const futureExpense = monthlyExpense * Math.pow(1 + inflation / 100, yearsToRetirement);
+    const yearsToRetirement = debouncedRetirementAge - debouncedCurrentAge;
+    const futureExpense = debouncedExpense * Math.pow(1 + debouncedInflation / 100, yearsToRetirement);
     const yearsInRetirement = 25;
     const corpusNeeded = futureExpense * 12 * yearsInRetirement;
     
@@ -36,9 +54,9 @@ export function RetirementCalculator() {
     const sipNeeded = corpusNeeded / (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
     
     const ageData = [];
-    for (let age = currentAge; age <= retirementAge; age += 5) {
-      const yearsFromNow = age - currentAge;
-      const expenseAtAge = monthlyExpense * Math.pow(1 + inflation / 100, yearsFromNow);
+    for (let age = debouncedCurrentAge; age <= debouncedRetirementAge; age += 5) {
+      const yearsFromNow = age - debouncedCurrentAge;
+      const expenseAtAge = debouncedExpense * Math.pow(1 + debouncedInflation / 100, yearsFromNow);
       ageData.push({
         age: `Age ${age}`,
         monthlyExpense: Math.round(expenseAtAge),
@@ -48,7 +66,7 @@ export function RetirementCalculator() {
     return { corpusNeeded, futureExpense, sipNeeded, ageData };
   };
 
-  const retirementResult = calculateRetirement();
+  const retirementResult = useMemo(() => calculateRetirement(), [debouncedCurrentAge, debouncedRetirementAge, debouncedExpense, debouncedInflation]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

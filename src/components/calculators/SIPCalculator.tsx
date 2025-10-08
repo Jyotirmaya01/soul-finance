@@ -1,12 +1,28 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function SIPCalculator() {
   const [sipMonthly, setSipMonthly] = useState(5000);
   const [sipRate, setSipRate] = useState(12);
   const [sipYears, setSipYears] = useState(10);
+  
+  // Debounced values
+  const [debouncedMonthly, setDebouncedMonthly] = useState(sipMonthly);
+  const [debouncedRate, setDebouncedRate] = useState(sipRate);
+  const [debouncedYears, setDebouncedYears] = useState(sipYears);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMonthly(sipMonthly);
+      setDebouncedRate(sipRate);
+      setDebouncedYears(sipYears);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [sipMonthly, sipRate, sipYears]);
 
   const validatePositiveNumber = (value: number, min: number = 0) => {
     return !isNaN(value) && value > min;
@@ -21,20 +37,20 @@ export function SIPCalculator() {
   };
 
   const calculateSIP = () => {
-    if (!validatePositiveNumber(sipMonthly, 0) || !validateRate(sipRate) || !validateYears(sipYears)) {
+    if (!validatePositiveNumber(debouncedMonthly, 0) || !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { futureValue: 0, invested: 0, returns: 0, yearlyData: [] };
     }
-    const monthlyRate = sipRate / 12 / 100;
-    const months = sipYears * 12;
-    const futureValue = sipMonthly * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
-    const invested = sipMonthly * months;
+    const monthlyRate = debouncedRate / 12 / 100;
+    const months = debouncedYears * 12;
+    const futureValue = debouncedMonthly * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate));
+    const invested = debouncedMonthly * months;
     const returns = futureValue - invested;
     
     const yearlyData = [];
-    for (let year = 1; year <= sipYears; year++) {
+    for (let year = 1; year <= debouncedYears; year++) {
       const monthsElapsed = year * 12;
-      const value = sipMonthly * (((Math.pow(1 + monthlyRate, monthsElapsed) - 1) / monthlyRate) * (1 + monthlyRate));
-      const investedAmount = sipMonthly * monthsElapsed;
+      const value = debouncedMonthly * (((Math.pow(1 + monthlyRate, monthsElapsed) - 1) / monthlyRate) * (1 + monthlyRate));
+      const investedAmount = debouncedMonthly * monthsElapsed;
       yearlyData.push({
         year: `Year ${year}`,
         invested: Math.round(investedAmount),
@@ -46,7 +62,7 @@ export function SIPCalculator() {
     return { futureValue, invested, returns, yearlyData };
   };
 
-  const sipResult = calculateSIP();
+  const sipResult = useMemo(() => calculateSIP(), [debouncedMonthly, debouncedRate, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

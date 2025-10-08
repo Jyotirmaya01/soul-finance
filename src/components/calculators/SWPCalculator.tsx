@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function SWPCalculator() {
@@ -8,6 +8,24 @@ export function SWPCalculator() {
   const [swpWithdrawal, setSwpWithdrawal] = useState(40000);
   const [swpRate, setSwpRate] = useState(8);
   const [swpYears, setSwpYears] = useState(20);
+
+  // Debounced values
+  const [debouncedCorpus, setDebouncedCorpus] = useState(swpCorpus);
+  const [debouncedWithdrawal, setDebouncedWithdrawal] = useState(swpWithdrawal);
+  const [debouncedRate, setDebouncedRate] = useState(swpRate);
+  const [debouncedYears, setDebouncedYears] = useState(swpYears);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedCorpus(swpCorpus);
+      setDebouncedWithdrawal(swpWithdrawal);
+      setDebouncedRate(swpRate);
+      setDebouncedYears(swpYears);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [swpCorpus, swpWithdrawal, swpRate, swpYears]);
 
   const validatePositiveNumber = (value: number, min: number = 0) => {
     return !isNaN(value) && value > min;
@@ -22,19 +40,19 @@ export function SWPCalculator() {
   };
 
   const calculateSWP = () => {
-    if (!validatePositiveNumber(swpCorpus, 0) || !validatePositiveNumber(swpWithdrawal, 0) || 
-        !validateRate(swpRate) || !validateYears(swpYears)) {
+    if (!validatePositiveNumber(debouncedCorpus, 0) || !validatePositiveNumber(debouncedWithdrawal, 0) || 
+        !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { finalBalance: 0, totalWithdrawn: 0, yearlyData: [] };
     }
-    const monthlyRate = swpRate / 12 / 100;
-    let balance = swpCorpus;
+    const monthlyRate = debouncedRate / 12 / 100;
+    let balance = debouncedCorpus;
     let totalWithdrawn = 0;
     
     const yearlyData = [];
-    for (let year = 1; year <= swpYears; year++) {
+    for (let year = 1; year <= debouncedYears; year++) {
       for (let month = 1; month <= 12; month++) {
-        balance = balance * (1 + monthlyRate) - swpWithdrawal;
-        totalWithdrawn += swpWithdrawal;
+        balance = balance * (1 + monthlyRate) - debouncedWithdrawal;
+        totalWithdrawn += debouncedWithdrawal;
         if (balance <= 0) {
           balance = 0;
           break;
@@ -51,7 +69,7 @@ export function SWPCalculator() {
     return { finalBalance: balance, totalWithdrawn, yearlyData };
   };
 
-  const swpResult = calculateSWP();
+  const swpResult = useMemo(() => calculateSWP(), [debouncedCorpus, debouncedWithdrawal, debouncedRate, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

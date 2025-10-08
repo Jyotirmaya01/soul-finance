@@ -1,12 +1,28 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export function LumpsumCalculator() {
   const [investment, setInvestment] = useState(100000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
+
+  // Debounced values
+  const [debouncedInvestment, setDebouncedInvestment] = useState(investment);
+  const [debouncedRate, setDebouncedRate] = useState(rate);
+  const [debouncedYears, setDebouncedYears] = useState(years);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedInvestment(investment);
+      setDebouncedRate(rate);
+      setDebouncedYears(years);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [investment, rate, years]);
 
   const validatePositiveNumber = (value: number, min: number = 0, max: number = 100000000) => {
     return !isNaN(value) && value > min && value <= max;
@@ -21,27 +37,27 @@ export function LumpsumCalculator() {
   };
 
   const calculateLumpsum = () => {
-    if (!validatePositiveNumber(investment, 0) || !validateRate(rate) || !validateYears(years)) {
+    if (!validatePositiveNumber(debouncedInvestment, 0) || !validateRate(debouncedRate) || !validateYears(debouncedYears)) {
       return { futureValue: 0, returns: 0, yearlyData: [] };
     }
 
-    const futureValue = investment * Math.pow(1 + rate / 100, years);
-    const returns = futureValue - investment;
+    const futureValue = debouncedInvestment * Math.pow(1 + debouncedRate / 100, debouncedYears);
+    const returns = futureValue - debouncedInvestment;
 
     const yearlyData = [];
-    for (let year = 1; year <= years; year++) {
-      const value = investment * Math.pow(1 + rate / 100, year);
+    for (let year = 1; year <= debouncedYears; year++) {
+      const value = debouncedInvestment * Math.pow(1 + debouncedRate / 100, year);
       yearlyData.push({
         year: `Year ${year}`,
         value: Math.round(value),
-        invested: investment,
+        invested: debouncedInvestment,
       });
     }
 
     return { futureValue, returns, yearlyData };
   };
 
-  const result = calculateLumpsum();
+  const result = useMemo(() => calculateLumpsum(), [debouncedInvestment, debouncedRate, debouncedYears]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
