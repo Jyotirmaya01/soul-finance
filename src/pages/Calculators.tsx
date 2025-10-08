@@ -9,6 +9,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
+import { LumpsumCalculator } from "@/components/calculators/LumpsumCalculator";
+import { PPFCalculator } from "@/components/calculators/PPFCalculator";
+import { GratuityCalculator } from "@/components/calculators/GratuityCalculator";
+import { CalculatorCard } from "@/components/calculators/CalculatorCard";
 
 export default function Calculators() {
   const navigate = useNavigate();
@@ -404,13 +408,16 @@ export default function Calculators() {
         </motion.div>
 
         <Tabs defaultValue="sip" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 gap-1">
             <TabsTrigger value="sip">SIP</TabsTrigger>
+            <TabsTrigger value="lumpsum">Lumpsum</TabsTrigger>
             <TabsTrigger value="fd">FD</TabsTrigger>
+            <TabsTrigger value="ppf">PPF</TabsTrigger>
             <TabsTrigger value="emi">EMI</TabsTrigger>
             <TabsTrigger value="retirement">Retirement</TabsTrigger>
             <TabsTrigger value="swp">SWP</TabsTrigger>
             <TabsTrigger value="mutualfund">Mutual Fund</TabsTrigger>
+            <TabsTrigger value="gratuity">Gratuity</TabsTrigger>
           </TabsList>
 
           {/* SIP Calculator */}
@@ -498,6 +505,16 @@ export default function Calculators() {
             </Card>
           </TabsContent>
 
+          {/* NEW: Lumpsum Calculator */}
+          <TabsContent value="lumpsum">
+            <CalculatorCard
+              title="Lumpsum Calculator"
+              description="Calculate returns on your one-time investment"
+            >
+              <LumpsumCalculator />
+            </CalculatorCard>
+          </TabsContent>
+
           {/* FD Calculator */}
           <TabsContent value="fd">
             <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
@@ -563,6 +580,16 @@ export default function Calculators() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* NEW: PPF Calculator */}
+          <TabsContent value="ppf">
+            <CalculatorCard
+              title="PPF Calculator"
+              description="Calculate returns on Public Provident Fund with 15-year lock-in"
+            >
+              <PPFCalculator />
+            </CalculatorCard>
           </TabsContent>
 
           {/* EMI Calculator */}
@@ -931,6 +958,16 @@ export default function Calculators() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* NEW: Gratuity Calculator */}
+          <TabsContent value="gratuity">
+            <CalculatorCard
+              title="Gratuity Calculator"
+              description="Calculate gratuity amount based on salary and years of service"
+            >
+              <GratuityCalculator />
+            </CalculatorCard>
           </TabsContent>
         </Tabs>
       </div>
