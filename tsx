@@ -1,74 +1,58 @@
-import { TreeVisualization } from "@/components/TreeVisualization";
-import { HeroScene3D } from "@/components/HeroScene3D";
-import { ScrollStory } from "@/components/ScrollStory";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Heart, Leaf, Shield, Sparkles, Target, Users, Mail, MapPin, Phone, Star, TrendingUp, Award, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
-import { LoadingScreen } from "@/components/LoadingScreen";
-import { useState, useEffect } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { ShareButtons } from "@/components/ShareButtons";
+import { HeroScene3D } from "@/components/HeroScene3D";
+import { TreeVisualization } from "@/components/TreeVisualization";
+import { ParallaxBackground } from "./ParallaxBackground";
+import { AICoachWidget } from "./AICoachWidget";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Float, PerspectiveCamera, Environment, Stars, Sparkles } from "@react-three/drei";
+import { useRef, Suspense } from "react";
+import * as THREE from "three";
 
-const features = [
+export function HeroScene3D() {
+  return (
+    <div className="absolute inset-0 -z-10 h-full w-full opacity-80 dark:opacity-90 pointer-events-none">
+      <Canvas gl={{ antialias: true, alpha: true }}>
+        <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[10, 10, 10]} intensity={1} />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b5cf6" />
+        <spotLight position={[0, 10, 0]} intensity={0.8} angle={0.5} penumbra={1} />
+        
+        <Suspense fallback={null}>
+          <GlassCrystal />
+          <FloatingElements />
+          
+          <Sparkles count={100} scale={12} size={2} speed={0.4} opacity={0.4} color="#ffffff" />
+          <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+          <Environment preset="city" />
+        </Suspense>
+      </Canvas>
+    </div>
+  );
+}
 
-{/* Hero Section */}
-<section className="relative container mx-auto px-4 py-20 min-h-[80vh] flex items-center">
-  <HeroScene3D />
-  <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
-    <motion.div 
-      initial={{ opacity: 0, x: -50 }} 
-      animate={{ opacity: 1, x: 0 }} 
-      transition={{ duration: 0.8 }}
-      style={{ opacity, scale }}
-    >
-      <motion.h1 
-        className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.8 }}
-      >
-        Finally, Finance That Understands You.
-      </motion.h1>
-      <motion.p 
-        className="text-xl text-muted-foreground mb-8 leading-relaxed backdrop-blur-sm bg-white/30 dark:bg-black/30 p-4 rounded-xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.8 }}
-      >
-        FinSoul is your values-driven financial companion. We blend emotional intelligence with smart money management to help you grow wealth that feels right.
-      </motion.p>
-      <motion.div 
-        className="flex flex-col sm:flex-row gap-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.8 }}
-      >
-        <Button size="lg" onClick={() => navigate("/auth")} className="text-lg group">
-          <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
-          Start Your Free Soul Scan
-        </Button>
-        <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>Sign In</Button>
-      </motion.div>
-      <motion.p 
-        className="text-sm text-muted-foreground mt-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.8 }}
-      >
-        ✨ No credit card required • 5-minute setup • Join 10,000+ mindful investors
-      </motion.p>
-    </motion.div>
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.8 }} 
-      animate={{ opacity: 1, scale: 1 }} 
-      transition={{ duration: 1, delay: 0.2 }}
-      className="hidden lg:block"
-    >
-      <TreeVisualization />
-    </motion.div>
-  </div>
-</section>
-]
+export function TreeVisualization() {
+  return (
+    <div className="relative w-full h-[500px] flex items-center justify-center">
+      <Canvas>
+        <PerspectiveCamera makeDefault position={[0, 0, 8]} />
+        <ambientLight intensity={0.8} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#10b981" />
+        
+        <Suspense fallback={null}>
+          <group position={[0, -0.5, 0]}>
+            <TreeTrunk />
+            <TreeCrown />
+            <FloatingParticles />
+          </group>
+
+          <Environment preset="forest" />
+        </Suspense>
+      </Canvas>
+    </div>
+  );
+}

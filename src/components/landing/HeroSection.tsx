@@ -14,11 +14,11 @@ export function HeroSection() {
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
   return (
-    <section className="relative container mx-auto px-4 py-20 min-h-[80vh] flex items-center">
+    <section className="relative w-full min-h-[80vh] flex items-center overflow-hidden">
       <ParallaxBackground />
       <HeroScene3D />
       
-      <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10 w-full">
+      <div className="container mx-auto px-4 py-20 grid lg:grid-cols-2 gap-12 items-center relative z-10 w-full">
         <motion.div 
           initial={{ opacity: 0, x: -50 }} 
           animate={{ opacity: 1, x: 0 }} 

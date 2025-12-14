@@ -2,6 +2,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sparkles, Environment, PerspectiveCamera } from "@react-three/drei";
 import { useRef } from "react";
 import * as THREE from "three";
+import { Suspense } from "react";
 
 function TreeCrown() {
   const groupRef = useRef<THREE.Group>(null);
@@ -98,13 +99,15 @@ export function TreeVisualization() {
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="#10b981" />
         
-        <group position={[0, -0.5, 0]}>
-          <TreeTrunk />
-          <TreeCrown />
-          <FloatingParticles />
-        </group>
+        <Suspense fallback={null}>
+          <group position={[0, -0.5, 0]}>
+            <TreeTrunk />
+            <TreeCrown />
+            <FloatingParticles />
+          </group>
 
-        <Environment preset="forest" />
+          <Environment preset="forest" />
+        </Suspense>
       </Canvas>
     </div>
   );
