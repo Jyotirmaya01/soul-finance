@@ -1,0 +1,1 @@
+print(default_api.readFilesToContextTool(file_paths=['src/pages/Profile.tsx'], replace_files_in_context=False))
