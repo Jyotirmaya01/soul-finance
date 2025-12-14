@@ -92,7 +92,7 @@ function FloatingParticles() {
 
 export function TreeVisualization() {
   return (
-    <div className="relative w-full h-[500px] flex items-center justify-center">
+    <div className="relative w-full h-[300px] lg:h-[500px] flex items-center justify-center">
       <Canvas>
         <PerspectiveCamera makeDefault position={[0, 0, 8]} />
         <ambientLight intensity={0.8} />
