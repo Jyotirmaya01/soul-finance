@@ -12,6 +12,11 @@ import { useNavigate } from "react-router";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { AchievementBadge } from "@/components/gamification/AchievementBadge";
 import { LevelProgress } from "@/components/gamification/LevelProgress";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { FloatingAIChatButton } from "@/components/FloatingAIChatButton";
 
 // Define all possible achievements
 const ALL_ACHIEVEMENTS = [
@@ -293,9 +298,14 @@ export default function Achievements() {
   const earnedAchievements = new Set(userAchievements.map((a) => a.type));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="glow" />
+      <FloatingAIChatButton />
+
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -305,7 +315,9 @@ export default function Achievements() {
             <Trophy className="h-5 w-5 text-yellow-600" />
             Achievements
           </h1>
-          <div className="w-32" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -315,7 +327,7 @@ export default function Achievements() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         onClick={() => setShowHelpDialog(true)}
-        className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all"
+        className="fixed bottom-24 right-6 z-40 bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-3 rounded-full shadow-xl hover:shadow-orange-500/50 hover:scale-110 transition-all"
         aria-label="How to earn points"
       >
         <HelpCircle className="h-6 w-6" />

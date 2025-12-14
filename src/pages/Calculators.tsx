@@ -14,24 +14,37 @@ import { EMICalculator } from "@/components/calculators/EMICalculator";
 import { RetirementCalculator } from "@/components/calculators/RetirementCalculator";
 import { SWPCalculator } from "@/components/calculators/SWPCalculator";
 import { MutualFundCalculator } from "@/components/calculators/MutualFundCalculator";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { FloatingAIChatButton } from "@/components/FloatingAIChatButton";
 
 export default function Calculators() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="grid" />
+      <FloatingAIChatButton />
+
+      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Financial Calculators</h1>
-          <ProfileDropdown />
+          <h1 className="text-xl font-bold hidden sm:block">Financial Calculators</h1>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <ProfileDropdown />
+          </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

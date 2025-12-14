@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface AnimatedBackgroundProps {
   className?: string;
-  variant?: "default" | "subtle" | "glow";
+  variant?: "default" | "subtle" | "glow" | "grid" | "nebula";
 }
 
 export function AnimatedBackground({ className, variant = "default" }: AnimatedBackgroundProps) {
@@ -70,6 +70,42 @@ export function AnimatedBackground({ className, variant = "default" }: AnimatedB
             }}
             className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
           />
+        </>
+      )}
+
+      {variant === "grid" && (
+        <div className="absolute inset-0 bg-grid-slate-200/50 dark:bg-grid-slate-800/50 bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,white,transparent_75%)]">
+          <motion.div
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5"
+          />
+        </div>
+      )}
+
+      {variant === "nebula" && (
+        <>
+          <div className="absolute inset-0 bg-black/5 dark:bg-black/20" />
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl"
+          />
+          <div className="absolute inset-0 bg-[url('/stars.png')] opacity-20" />
         </>
       )}
     </div>

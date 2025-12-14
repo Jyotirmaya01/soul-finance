@@ -11,6 +11,11 @@ import { ArrowLeft, Calendar, Moon, Sparkles, Star, TrendingUp } from "lucide-re
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { FloatingAIChatButton } from "@/components/FloatingAIChatButton";
 
 const zodiacSigns = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -99,9 +104,14 @@ export default function FinancialAstrology() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-indigo-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="nebula" />
+      <FloatingAIChatButton />
+
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
@@ -110,15 +120,18 @@ export default function FinancialAstrology() {
             <Moon className="h-6 w-6 text-purple-500" />
             <h1 className="text-xl font-bold">Financial Astrology</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm text-muted-foreground">Daily Guidance</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 hidden sm:flex">
+              <Star className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm text-muted-foreground">Daily Guidance</span>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Zodiac Selector */}
         {!selectedZodiac && (
           <motion.div

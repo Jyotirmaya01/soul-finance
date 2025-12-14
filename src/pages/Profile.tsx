@@ -15,6 +15,11 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { FloatingAIChatButton } from "@/components/FloatingAIChatButton";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -120,13 +125,18 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="subtle" />
+      <FloatingAIChatButton />
+
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50"
+        className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300"
       >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -134,12 +144,14 @@ export default function Profile() {
             Back to Dashboard
           </Button>
           <h1 className="text-xl font-bold">Profile & Settings</h1>
-          <div className="w-32" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
         </div>
       </motion.header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

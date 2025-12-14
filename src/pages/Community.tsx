@@ -20,6 +20,8 @@ import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { TextReveal } from "@/components/ui/text-reveal";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { FloatingAIChatButton } from "@/components/FloatingAIChatButton";
 
 export default function Community() {
   const navigate = useNavigate();
@@ -103,13 +105,14 @@ export default function Community() {
       <ScrollProgress />
       <BackToTop />
       <AnimatedBackground variant="subtle" />
+      <FloatingAIChatButton />
 
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50"
+        className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300"
       >
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -117,12 +120,15 @@ export default function Community() {
             Back to Dashboard
           </Button>
           <h1 className="text-xl font-bold">Community</h1>
-          <ProfileDropdown />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <ProfileDropdown />
+          </div>
         </div>
       </motion.header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
