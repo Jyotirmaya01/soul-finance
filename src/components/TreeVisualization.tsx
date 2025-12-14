@@ -3,6 +3,7 @@ import { Float, Sparkles, Environment, PerspectiveCamera } from "@react-three/dr
 import { useRef } from "react";
 import * as THREE from "three";
 import { Suspense } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function TreeCrown() {
   const groupRef = useRef<THREE.Group>(null);
@@ -91,16 +92,18 @@ function FloatingParticles() {
 }
 
 export function TreeVisualization() {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="relative w-full h-[300px] lg:h-[500px] flex items-center justify-center">
+    <div className="relative w-full h-[350px] lg:h-[500px] flex items-center justify-center">
       <Canvas>
-        <PerspectiveCamera makeDefault position={[0, 0, 8]} />
+        <PerspectiveCamera makeDefault position={[0, 0, isMobile ? 10 : 8]} />
         <ambientLight intensity={0.8} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="#10b981" />
         
         <Suspense fallback={null}>
-          <group position={[0, -0.5, 0]}>
+          <group position={[0, -0.5, 0]} scale={isMobile ? 0.85 : 1}>
             <TreeTrunk />
             <TreeCrown />
             <FloatingParticles />
