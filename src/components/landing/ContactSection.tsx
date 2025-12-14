@@ -24,8 +24,8 @@ export function ContactSection() {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { icon: Mail, title: "Email Us", info: "support@finsoul.com", color: "text-primary" },
-            { icon: Phone, title: "Call Us", info: "+91 1800-123-4567", color: "text-green-500" },
-            { icon: MapPin, title: "Visit Us", info: "Mumbai, India", color: "text-blue-500" }
+            { icon: Phone, title: "Call Us", info: "+91 1800-123-4567", color: "text-green-500", link: "tel:+9118001234567" },
+            { icon: MapPin, title: "Visit Us", info: "Mumbai, India", color: "text-blue-500", link: "https://www.google.com/maps/search/?api=1&query=Mumbai+India" }
           ].map((contact, i) => (
             <motion.div 
               key={i}
@@ -34,6 +34,7 @@ export function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
+              onClick={() => contact.link && window.open(contact.link, '_blank')}
               className="backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 p-6 rounded-2xl border text-center hover:shadow-xl transition-shadow cursor-pointer"
             >
               <motion.div

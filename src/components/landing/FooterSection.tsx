@@ -13,7 +13,13 @@ export function FooterSection() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-center md:text-left text-sm text-muted-foreground">
             <p>© 2024 FinSoul. Made with 💚 for mindful investors.</p>
-            <p className="mt-2">Powered by FinSoul • Secured by FinSoul</p>
+            <div className="flex flex-wrap gap-4 mt-2 text-xs">
+              <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-primary transition-colors">Cookie Policy</a>
+              <a href="#" className="hover:text-primary transition-colors">Sitemap</a>
+            </div>
+            <p className="mt-2 text-xs opacity-70">Powered by FinSoul • Secured by FinSoul</p>
           </div>
           <div className="flex items-center gap-4">
             <ShareButtons 
