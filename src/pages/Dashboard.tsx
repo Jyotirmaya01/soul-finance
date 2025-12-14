@@ -20,6 +20,9 @@ import { TutorialDialog } from "@/components/dashboard/TutorialDialog";
 import { PeaceMeterCard } from "@/components/dashboard/PeaceMeterCard";
 import { ValuesCard } from "@/components/dashboard/ValuesCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { BackToTop } from "@/components/ui/back-to-top";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -186,7 +189,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="subtle" />
+      
       {/* Floating Help Button */}
       <motion.button
         initial={{ opacity: 0, scale: 0 }}

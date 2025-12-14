@@ -16,6 +16,10 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export default function Community() {
   const navigate = useNavigate();
@@ -95,7 +99,11 @@ export default function Community() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="subtle" />
+
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
@@ -121,10 +129,10 @@ export default function Community() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
-            <Users className="text-blue-500" />
-            Financial Circles
-          </h2>
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="text-blue-500 h-8 w-8" />
+            <TextReveal text="Financial Circles" className="text-3xl font-bold tracking-tight" />
+          </div>
           <p className="text-muted-foreground">
             Join communities of like-minded investors and learners
           </p>

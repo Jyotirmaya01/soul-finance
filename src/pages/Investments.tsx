@@ -19,6 +19,10 @@ import { EditPortfolioDialog } from "@/components/investments/EditPortfolioDialo
 import { toast } from "sonner";
 import type { Id } from "@/convex/_generated/dataModel";
 import { ShareButtons } from "@/components/ShareButtons";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export default function Investments() {
   const navigate = useNavigate();
@@ -82,7 +86,11 @@ export default function Investments() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      <AnimatedBackground variant="subtle" />
+
       {/* Header */}
       <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -122,7 +130,9 @@ export default function Investments() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-8"
             >
-              <h2 className="text-3xl font-bold mb-2">Values-Aligned Investments</h2>
+              <div className="flex justify-center mb-2">
+                <TextReveal text="Values-Aligned Investments" className="text-3xl font-bold" />
+              </div>
               <p className="text-muted-foreground">
                 Discover investment opportunities that match your financial archetype
               </p>

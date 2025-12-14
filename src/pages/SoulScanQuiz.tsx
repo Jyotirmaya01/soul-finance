@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { AnimatedBackground } from "@/components/ui/animated-background";
 
 const quizSections = [
   {
@@ -187,8 +188,9 @@ export default function SoulScanQuiz() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 relative overflow-hidden">
+      <AnimatedBackground variant="glow" />
+      <div className="max-w-2xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
