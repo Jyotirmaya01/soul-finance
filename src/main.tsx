@@ -20,6 +20,9 @@ import Pricing from "./pages/Pricing.tsx";
 import FinancialAstrology from "./pages/FinancialAstrology.tsx";
 import CircleDetail from "./pages/CircleDetail.tsx";
 import Achievements from "./pages/Achievements";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import Markets from "./pages/Markets";
 import "./types/global.d.ts";
 import { ThemeProvider } from "@/hooks/use-theme.tsx";
 
@@ -47,12 +50,24 @@ const router = createBrowserRouter([
     element: <Investments />,
   },
   {
+    path: "/markets",
+    element: <Markets />,
+  },
+  {
     path: "/community",
     element: <Community />,
   },
   {
     path: "/community/:circleId",
     element: <CircleDetail />,
+  },
+  {
+    path: "/blog",
+    element: <Blog />,
+  },
+  {
+    path: "/blog/:slug",
+    element: <BlogPost />,
   },
   {
     path: "/profile",

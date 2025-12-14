@@ -1,4 +1,6 @@
 import { TreeVisualization } from "@/components/TreeVisualization";
+import { HeroScene3D } from "@/components/HeroScene3D";
+import { ScrollStory } from "@/components/ScrollStory";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
@@ -54,7 +56,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden">
       {/* Navigation */}
       <motion.nav 
         initial={{ y: -100, opacity: 0 }}
@@ -92,6 +94,26 @@ export default function Landing() {
                 {item.charAt(0).toUpperCase() + item.slice(1)}
               </motion.a>
             ))}
+            <motion.a
+              href="/blog"
+              className="text-sm hover:text-primary transition-colors"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.1, color: "var(--color-primary)" }}
+            >
+              Blog
+            </motion.a>
+            <motion.a
+              href="/markets"
+              className="text-sm hover:text-primary transition-colors"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              whileHover={{ scale: 1.1, color: "var(--color-primary)" }}
+            >
+              Markets
+            </motion.a>
           </div>
           <motion.div 
             className="flex items-center gap-4"
@@ -124,8 +146,9 @@ export default function Landing() {
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="relative container mx-auto px-4 py-20 min-h-[80vh] flex items-center">
+        <HeroScene3D />
+        <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
           <motion.div 
             initial={{ opacity: 0, x: -50 }} 
             animate={{ opacity: 1, x: 0 }} 
@@ -133,7 +156,7 @@ export default function Landing() {
             style={{ opacity, scale }}
           >
             <motion.h1 
-              className="text-5xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent"
+              className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
@@ -141,7 +164,7 @@ export default function Landing() {
               Finally, Finance That Understands You.
             </motion.h1>
             <motion.p 
-              className="text-xl text-muted-foreground mb-8 leading-relaxed"
+              className="text-xl text-muted-foreground mb-8 leading-relaxed backdrop-blur-sm bg-white/30 dark:bg-black/30 p-4 rounded-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
@@ -173,11 +196,14 @@ export default function Landing() {
             initial={{ opacity: 0, scale: 0.8 }} 
             animate={{ opacity: 1, scale: 1 }} 
             transition={{ duration: 1, delay: 0.2 }}
+            className="hidden lg:block"
           >
             <TreeVisualization />
           </motion.div>
         </div>
       </section>
+
+      <ScrollStory />
 
       {/* Stats Section */}
       <section className="container mx-auto px-4 py-12">

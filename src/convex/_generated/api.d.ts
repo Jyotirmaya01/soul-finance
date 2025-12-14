@@ -17,6 +17,7 @@ import type * as aiChat from "../aiChat.js";
 import type * as astrology from "../astrology.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
+import type * as blogs from "../blogs.js";
 import type * as celebrations from "../celebrations.js";
 import type * as circlePosts from "../circlePosts.js";
 import type * as circles from "../circles.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   astrology: typeof astrology;
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
+  blogs: typeof blogs;
   celebrations: typeof celebrations;
   circlePosts: typeof circlePosts;
   circles: typeof circles;

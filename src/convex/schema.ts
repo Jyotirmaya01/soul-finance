@@ -122,6 +122,20 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_circle_and_user", ["circleId", "userId"]),
 
+    blogs: defineTable({
+      title: v.string(),
+      slug: v.string(),
+      content: v.string(),
+      excerpt: v.string(),
+      authorId: v.id("users"),
+      coverImage: v.optional(v.string()),
+      publishedAt: v.number(),
+      tags: v.array(v.string()),
+      readTime: v.number(),
+    })
+      .index("by_slug", ["slug"])
+      .index("by_published", ["publishedAt"]),
+
     celebrations: defineTable({
       userId: v.id("users"),
       type: v.string(),
