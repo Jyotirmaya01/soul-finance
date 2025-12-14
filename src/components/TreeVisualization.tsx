@@ -1,94 +1,130 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Sparkles, Environment, PerspectiveCamera } from "@react-three/drei";
-import { useRef } from "react";
+import { Float, Sparkles, Environment, PerspectiveCamera, ContactShadows } from "@react-three/drei";
+import { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { Suspense } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+function CrystalLeaf({ position, scale, color, speed = 1 }: { position: [number, number, number], scale: number, color: string, speed?: number }) {
+  return (
+    <Float speed={speed} rotationIntensity={1.5} floatIntensity={1.5} position={position}>
+      <mesh scale={scale}>
+        <octahedronGeometry args={[1, 0]} />
+        <meshPhysicalMaterial 
+          color={color}
+          roughness={0.05}
+          metalness={0.2}
+          transmission={0.7} // Glass-like transmission
+          thickness={1.5} // Refraction volume
+          ior={1.7} // Index of refraction for crystal/gem look
+          clearcoat={1}
+          clearcoatRoughness={0.1}
+          emissive={color}
+          emissiveIntensity={0.2}
+        />
+      </mesh>
+    </Float>
+  );
+}
 
 function TreeCrown() {
   const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+      // Slow rotation for the whole crown
+      groupRef.current.rotation.y = Math.sin(state.clock.getElapsedTime() * 0.1) * 0.2;
     }
   });
 
-  return (
-    <group ref={groupRef} position={[0, 1.5, 0]}>
-      {/* Main Crown Volume - Abstract Glassy Shapes */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        <mesh position={[0, 0, 0]} scale={1.2}>
-          <dodecahedronGeometry args={[1.2, 0]} />
-          <meshPhysicalMaterial 
-            color="#10b981" // Emerald-500
-            roughness={0.1}
-            metalness={0.1}
-            transmission={0.6}
-            thickness={2}
-            ior={1.5}
-            clearcoat={1}
-          />
-        </mesh>
-      </Float>
-
-      {/* Floating surrounding crystals */}
-      {[...Array(6)].map((_, i) => {
-        const angle = (i / 6) * Math.PI * 2;
-        const radius = 1.8;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        return (
-          <Float key={i} speed={1.5} rotationIntensity={1} floatIntensity={1} position={[x, Math.sin(i) * 0.5, z]}>
-            <mesh scale={0.4}>
-              <octahedronGeometry args={[1, 0]} />
-              <meshStandardMaterial 
-                color="#34d399" // Emerald-400
-                emissive="#059669"
-                emissiveIntensity={0.5}
-                roughness={0.2}
-                metalness={0.8}
-              />
-            </mesh>
-          </Float>
-        );
-      })}
+  // Generate crystal positions in a spiral/spherical pattern
+  const crystals = useMemo(() => {
+    const items = [];
+    const count = 18;
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+    
+    for (let i = 0; i < count; i++) {
+      const theta = 2 * Math.PI * i / goldenRatio;
+      const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+      const r = 1.8 + Math.random() * 0.5;
       
-      <Sparkles count={30} scale={4} size={4} speed={0.4} opacity={0.5} color="#6ee7b7" />
-    </group>
-  );
-}
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.sin(phi) * Math.sin(theta) + 1.5; // Lift up
+      const z = r * Math.cos(phi);
+      
+      // Color gradient from emerald to teal/blue
+      const color = i % 2 === 0 ? "#10b981" : (i % 3 === 0 ? "#3b82f6" : "#34d399");
+      
+      items.push({
+        position: [x, y, z] as [number, number, number],
+        scale: 0.3 + Math.random() * 0.4,
+        color,
+        speed: 1 + Math.random()
+      });
+    }
+    return items;
+  }, []);
 
-function TreeTrunk() {
   return (
-    <mesh position={[0, -1, 0]}>
-      <cylinderGeometry args={[0.2, 0.4, 3, 8]} />
-      <meshStandardMaterial 
-        color="#78350f" // Amber-900
-        roughness={0.8}
-        metalness={0.2}
+    <group ref={groupRef}>
+      {/* Core glowing energy */}
+      <mesh position={[0, 1.5, 0]} scale={1.2}>
+        <dodecahedronGeometry args={[1, 0]} />
+        <meshPhysicalMaterial 
+          color="#6ee7b7"
+          roughness={0.2}
+          metalness={0.1}
+          transmission={0.8}
+          thickness={3}
+          ior={1.4}
+          opacity={0.6}
+          transparent
+        />
+      </mesh>
+      
+      {/* Floating Crystals */}
+      {crystals.map((crystal, i) => (
+        <CrystalLeaf key={i} {...crystal} />
+      ))}
+      
+      {/* Magical particles rising */}
+      <Sparkles 
+        count={40} 
+        scale={5} 
+        size={3} 
+        speed={0.8} 
+        opacity={0.6} 
+        color="#a7f3d0" 
+        position={[0, 1, 0]}
       />
-    </mesh>
+    </group>
   );
 }
 
-function FloatingParticles() {
+function StylizedTrunk() {
   return (
-    <group>
-       {[...Array(15)].map((_, i) => (
-         <Float key={i} speed={0.5} rotationIntensity={0.5} floatIntensity={2} position={[
-           (Math.random() - 0.5) * 6,
-           (Math.random() - 0.5) * 6,
-           (Math.random() - 0.5) * 4
-         ]}>
-           <mesh scale={Math.random() * 0.1 + 0.05}>
-             <sphereGeometry args={[1, 16, 16]} />
-             <meshBasicMaterial color="#fbbf24" transparent opacity={0.6} />
-           </mesh>
-         </Float>
-       ))}
+    <group position={[0, -1.5, 0]}>
+      {/* Main trunk - stylized cone/cylinder */}
+      <mesh position={[0, 1.5, 0]}>
+        <cylinderGeometry args={[0.1, 0.4, 3.5, 6]} />
+        <meshStandardMaterial 
+          color="#064e3b" // Dark emerald/forest green
+          roughness={0.4}
+          metalness={0.6}
+        />
+      </mesh>
+      
+      {/* Spiral accent around trunk */}
+      <mesh position={[0, 1.5, 0]} rotation={[0, 0, 0]}>
+        <torusGeometry args={[0.3, 0.02, 16, 32]} />
+        <meshStandardMaterial color="#34d399" emissive="#34d399" emissiveIntensity={0.5} />
+      </mesh>
+      <mesh position={[0, 0.5, 0]} rotation={[Math.PI / 8, 0, 0]}>
+        <torusGeometry args={[0.45, 0.03, 16, 32]} />
+        <meshStandardMaterial color="#34d399" emissive="#34d399" emissiveIntensity={0.3} />
+      </mesh>
     </group>
-  )
+  );
 }
 
 export function TreeVisualization() {
@@ -96,20 +132,23 @@ export function TreeVisualization() {
 
   return (
     <div className="relative w-full h-[350px] lg:h-[500px] flex items-center justify-center">
-      <Canvas>
-        <PerspectiveCamera makeDefault position={[0, 0, isMobile ? 10 : 8]} />
-        <ambientLight intensity={0.8} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#10b981" />
+      <Canvas dpr={[1, 2]}>
+        <PerspectiveCamera makeDefault position={[0, 0, isMobile ? 10 : 8]} fov={45} />
+        
+        {/* Lighting Setup for Glass */}
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.5} castShadow />
+        <pointLight position={[-10, -5, -10]} intensity={1} color="#3b82f6" />
+        <pointLight position={[5, 5, 5]} intensity={0.8} color="#10b981" />
         
         <Suspense fallback={null}>
           <group position={[0, -0.5, 0]} scale={isMobile ? 0.85 : 1}>
-            <TreeTrunk />
+            <StylizedTrunk />
             <TreeCrown />
-            <FloatingParticles />
           </group>
-
-          <Environment preset="forest" />
+          
+          <ContactShadows opacity={0.4} scale={10} blur={2.5} far={4} />
+          <Environment preset="city" />
         </Suspense>
       </Canvas>
     </div>
