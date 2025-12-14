@@ -1,69 +1,111 @@
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Float, Sparkles, Environment, PerspectiveCamera } from "@react-three/drei";
+import { useRef } from "react";
+import * as THREE from "three";
 
-export function TreeVisualization() {
-  const [isGrowing, setIsGrowing] = useState(false);
-
-  useEffect(() => {
-    setIsGrowing(true);
-  }, []);
+function TreeCrown() {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+    }
+  });
 
   return (
-    <div className="relative w-full h-[400px] flex items-end justify-center overflow-hidden">
-      {/* Trunk */}
-      <motion.div
-        className="absolute bottom-0 w-16 bg-gradient-to-t from-amber-800 to-amber-700 rounded-t-lg"
-        initial={{ height: 0 }}
-        animate={{ height: isGrowing ? 120 : 0 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-      />
+    <group ref={groupRef} position={[0, 1.5, 0]}>
+      {/* Main Crown Volume - Abstract Glassy Shapes */}
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <mesh position={[0, 0, 0]} scale={1.2}>
+          <dodecahedronGeometry args={[1.2, 0]} />
+          <meshPhysicalMaterial 
+            color="#10b981" // Emerald-500
+            roughness={0.1}
+            metalness={0.1}
+            transmission={0.6}
+            thickness={2}
+            ior={1.5}
+            clearcoat={1}
+          />
+        </mesh>
+      </Float>
 
-      {/* Main Crown */}
-      <motion.div
-        className="absolute bottom-24 w-64 h-64 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 opacity-90"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: isGrowing ? 1 : 0, opacity: isGrowing ? 0.9 : 0 }}
-        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-      />
+      {/* Floating surrounding crystals */}
+      {[...Array(6)].map((_, i) => {
+        const angle = (i / 6) * Math.PI * 2;
+        const radius = 1.8;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        return (
+          <Float key={i} speed={1.5} rotationIntensity={1} floatIntensity={1} position={[x, Math.sin(i) * 0.5, z]}>
+            <mesh scale={0.4}>
+              <octahedronGeometry args={[1, 0]} />
+              <meshStandardMaterial 
+                color="#34d399" // Emerald-400
+                emissive="#059669"
+                emissiveIntensity={0.5}
+                roughness={0.2}
+                metalness={0.8}
+              />
+            </mesh>
+          </Float>
+        );
+      })}
+      
+      <Sparkles count={30} scale={4} size={4} speed={0.4} opacity={0.5} color="#6ee7b7" />
+    </group>
+  );
+}
 
-      {/* Side leaves - reduced from 2 to simplified version */}
-      <motion.div
-        className="absolute bottom-32 left-1/4 w-40 h-40 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 opacity-80"
-        initial={{ scale: 0, x: -50 }}
-        animate={{ scale: isGrowing ? 1 : 0, x: isGrowing ? 0 : -50 }}
-        transition={{ duration: 1.2, delay: 0.8 }}
+function TreeTrunk() {
+  return (
+    <mesh position={[0, -1, 0]}>
+      <cylinderGeometry args={[0.2, 0.4, 3, 8]} />
+      <meshStandardMaterial 
+        color="#78350f" // Amber-900
+        roughness={0.8}
+        metalness={0.2}
       />
+    </mesh>
+  );
+}
 
-      <motion.div
-        className="absolute bottom-32 right-1/4 w-40 h-40 rounded-full bg-gradient-to-br from-teal-400 to-green-500 opacity-80"
-        initial={{ scale: 0, x: 50 }}
-        animate={{ scale: isGrowing ? 1 : 0, x: isGrowing ? 0 : 50 }}
-        transition={{ duration: 1.2, delay: 0.8 }}
-      />
+function FloatingParticles() {
+  return (
+    <group>
+       {[...Array(15)].map((_, i) => (
+         <Float key={i} speed={0.5} rotationIntensity={0.5} floatIntensity={2} position={[
+           (Math.random() - 0.5) * 6,
+           (Math.random() - 0.5) * 6,
+           (Math.random() - 0.5) * 4
+         ]}>
+           <mesh scale={Math.random() * 0.1 + 0.05}>
+             <sphereGeometry args={[1, 16, 16]} />
+             <meshBasicMaterial color="#fbbf24" transparent opacity={0.6} />
+           </mesh>
+         </Float>
+       ))}
+    </group>
+  )
+}
 
-      {/* Reduced particles from 8 to 4 */}
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-green-400"
-          initial={{ opacity: 0, y: 0 }}
-          animate={{
-            opacity: [0, 1, 0],
-            y: [-20, -80],
-            x: [0, (i % 2 === 0 ? 1 : -1) * 30],
-          }}
-          transition={{
-            duration: 3,
-            delay: 1.5 + i * 0.3,
-            repeat: Infinity,
-            repeatDelay: 2,
-          }}
-          style={{
-            bottom: `${100 + i * 30}px`,
-            left: `calc(50% + ${(i % 3 - 1) * 40}px)`,
-          }}
-        />
-      ))}
+export function TreeVisualization() {
+  return (
+    <div className="relative w-full h-[500px] flex items-center justify-center">
+      <Canvas>
+        <PerspectiveCamera makeDefault position={[0, 0, 8]} />
+        <ambientLight intensity={0.8} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#10b981" />
+        
+        <group position={[0, -0.5, 0]}>
+          <TreeTrunk />
+          <TreeCrown />
+          <FloatingParticles />
+        </group>
+
+        <Environment preset="forest" />
+      </Canvas>
     </div>
   );
 }
