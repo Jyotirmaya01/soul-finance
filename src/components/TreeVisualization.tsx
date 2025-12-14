@@ -27,13 +27,20 @@ function CrystalLeaf({ position, scale, color, speed = 1 }: { position: [number,
   );
 }
 
-function TreeCrown() {
+function TreeCrown({ growth }: { growth: number }) {
   const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
     if (groupRef.current) {
       // Slow rotation for the whole crown
       groupRef.current.rotation.y = Math.sin(state.clock.getElapsedTime() * 0.1) * 0.2;
+      
+      // Smoothly interpolate scale based on growth prop
+      // Crown starts growing after trunk is 50% done (growth > 0.5)
+      const targetScale = Math.max(0, (growth - 0.3) * 1.45); // 0.3 -> 1.0 maps to 0 -> 1 approx
+      
+      // Apply smooth lerp
+      groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
     }
   });
 
@@ -66,7 +73,7 @@ function TreeCrown() {
   }, []);
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={[0, 0, 0]}>
       {/* Core glowing energy */}
       <mesh position={[0, 1.5, 0]} scale={1.2}>
         <dodecahedronGeometry args={[1, 0]} />
@@ -101,9 +108,21 @@ function TreeCrown() {
   );
 }
 
-function StylizedTrunk() {
+function StylizedTrunk({ growth }: { growth: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      // Trunk grows first: 0 -> 0.6 maps to 0 -> 1
+      const targetScaleY = Math.min(1, growth * 1.6);
+      const targetScaleXZ = Math.min(1, growth * 2); // Thicken faster
+      
+      groupRef.current.scale.lerp(new THREE.Vector3(targetScaleXZ, targetScaleY, targetScaleXZ), 0.1);
+    }
+  });
+
   return (
-    <group position={[0, -1.5, 0]}>
+    <group ref={groupRef} position={[0, -1.5, 0]} scale={[0, 0, 0]}>
       {/* Main trunk - stylized cone/cylinder */}
       <mesh position={[0, 1.5, 0]}>
         <cylinderGeometry args={[0.1, 0.4, 3.5, 6]} />
@@ -127,8 +146,11 @@ function StylizedTrunk() {
   );
 }
 
-export function TreeVisualization() {
+export function TreeVisualization({ progress = 100 }: { progress?: number }) {
   const isMobile = useIsMobile();
+  
+  // Normalize progress to 0-1
+  const normalizedGrowth = Math.min(100, Math.max(0, progress)) / 100;
 
   return (
     <div className="relative w-full h-[350px] lg:h-[500px] flex items-center justify-center">
@@ -143,8 +165,8 @@ export function TreeVisualization() {
         
         <Suspense fallback={null}>
           <group position={[0, -0.5, 0]} scale={isMobile ? 0.85 : 1}>
-            <StylizedTrunk />
-            <TreeCrown />
+            <StylizedTrunk growth={normalizedGrowth} />
+            <TreeCrown growth={normalizedGrowth} />
           </group>
           
           <ContactShadows opacity={0.4} scale={10} blur={2.5} far={4} />

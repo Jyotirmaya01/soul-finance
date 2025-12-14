@@ -6,12 +6,25 @@ import { HeroScene3D } from "@/components/HeroScene3D";
 import { TreeVisualization } from "@/components/TreeVisualization";
 import { ParallaxBackground } from "./ParallaxBackground";
 import { AICoachWidget } from "./AICoachWidget";
+import { useState, useEffect } from "react";
 
 export function HeroSection() {
   const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
+  
+  // Tree growth state
+  const [treeProgress, setTreeProgress] = useState(0);
+
+  useEffect(() => {
+    // Animate tree growth on mount
+    const timer = setTimeout(() => {
+      setTreeProgress(100);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <section className="relative w-full min-h-[80vh] flex items-center overflow-hidden">
@@ -78,7 +91,7 @@ export function HeroSection() {
           transition={{ duration: 1, delay: 0.2 }}
           className="block mt-8 lg:mt-0"
         >
-          <TreeVisualization />
+          <TreeVisualization progress={treeProgress} />
         </motion.div>
       </div>
     </section>
