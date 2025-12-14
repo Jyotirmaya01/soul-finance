@@ -10,6 +10,10 @@ import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShareButtons } from "@/components/ShareButtons";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { TextReveal } from "@/components/ui/text-reveal";
+import { BackToTop } from "@/components/ui/back-to-top";
 
 const features = [
   { icon: Heart, title: "Peace Meter™", description: "Track your emotional relationship with money in real-time", color: "text-pink-500" },
@@ -53,6 +57,9 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden">
+      <ScrollProgress />
+      <BackToTop />
+      
       {/* Navigation */}
       <motion.nav 
         initial={{ y: -100, opacity: 0 }}
@@ -146,7 +153,8 @@ export default function Landing() {
       <ScrollStory />
 
       {/* Stats Section */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-12 relative">
+        <AnimatedBackground variant="subtle" className="rounded-3xl" />
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -180,7 +188,7 @@ export default function Landing() {
       </section>
 
       {/* AI Coach Preview Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-20 relative">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -293,7 +301,8 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-20 relative">
+        <AnimatedBackground variant="glow" />
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -301,14 +310,10 @@ export default function Landing() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <motion.h2 
-            className="text-4xl font-bold tracking-tight mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            The Anti-Bank App
-          </motion.h2>
+          <TextReveal 
+            text="The Anti-Bank App" 
+            className="text-4xl font-bold tracking-tight mb-4 text-foreground"
+          />
           <motion.p 
             className="text-xl text-muted-foreground max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -344,7 +349,8 @@ export default function Landing() {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="container mx-auto px-4 py-20">
+      <section id="about" className="container mx-auto px-4 py-20 relative">
+        <AnimatedBackground variant="default" />
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -353,14 +359,10 @@ export default function Landing() {
           className="max-w-4xl mx-auto"
         >
           <div className="text-center mb-12">
-            <motion.h2 
-              className="text-4xl font-bold tracking-tight mb-4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-            >
-              About FinSoul
-            </motion.h2>
+            <TextReveal 
+              text="About FinSoul" 
+              className="text-4xl font-bold tracking-tight mb-4 text-foreground"
+            />
             <motion.p 
               className="text-xl text-muted-foreground"
               initial={{ opacity: 0 }}
@@ -424,7 +426,8 @@ export default function Landing() {
       </section>
 
       {/* Reviews Section */}
-      <section id="reviews" className="container mx-auto px-4 py-20">
+      <section id="reviews" className="container mx-auto px-4 py-20 relative">
+        <AnimatedBackground variant="subtle" />
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -432,7 +435,10 @@ export default function Landing() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold tracking-tight mb-4">What Our Community Says</h2>
+          <TextReveal 
+            text="What Our Community Says" 
+            className="text-4xl font-bold tracking-tight mb-4 text-foreground"
+          />
           <p className="text-xl text-muted-foreground">Real stories from real people on their financial journey</p>
         </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -482,7 +488,8 @@ export default function Landing() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="container mx-auto px-4 py-20">
+      <section id="contact" className="container mx-auto px-4 py-20 relative">
+        <AnimatedBackground variant="glow" />
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           whileInView={{ opacity: 1, y: 0 }} 
@@ -491,7 +498,10 @@ export default function Landing() {
           className="max-w-4xl mx-auto"
         >
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold tracking-tight mb-4">Get In Touch</h2>
+            <TextReveal 
+              text="Get In Touch" 
+              className="text-4xl font-bold tracking-tight mb-4 text-foreground"
+            />
             <p className="text-xl text-muted-foreground">We'd love to hear from you. Reach out anytime!</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -531,16 +541,13 @@ export default function Landing() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
           whileHover={{ scale: 1.02 }}
-          className="backdrop-blur-sm bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 p-12 rounded-3xl text-center text-white hover:shadow-2xl transition-shadow"
+          className="backdrop-blur-sm bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 p-12 rounded-3xl text-center text-white hover:shadow-2xl transition-shadow relative overflow-hidden"
         >
-          <motion.h2 
-            className="text-4xl font-bold mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            Your Financial Soul Awaits
-          </motion.h2>
+          <AnimatedBackground variant="subtle" className="opacity-20" />
+          <TextReveal 
+            text="Your Financial Soul Awaits" 
+            className="text-4xl font-bold mb-4 text-white"
+          />
           <motion.p 
             className="text-xl mb-8 opacity-90"
             initial={{ opacity: 0, y: 20 }}

@@ -42,6 +42,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Enable smooth scrolling globally */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Calming glassmorphism theme */
 :root {
   --radius: 1rem;
