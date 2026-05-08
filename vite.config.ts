@@ -19,5 +19,19 @@ export default defineConfig({
     commonjsOptions: {
       include: [/canvas-confetti/, /node_modules/],
     },
+    // Memory optimization
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
+        },
+      },
+    },
+  },
+  // Reduce memory usage during build
+  esbuild: {
+    logOverride: { 'this-will-be-removed-in-next-major': 'silent' },
   },
 });
