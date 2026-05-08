@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@convex-dev/auth':
         specifier: ^0.0.86
-        version: 0.0.86(@auth/core@0.37.4)(convex@1.31.7(react@19.1.0))(react@19.1.0)
+        version: 0.0.86(@auth/core@0.37.4)(convex@1.37.0(react@19.1.0))(react@19.1.0)
       '@faker-js/faker':
         specifier: ^9.8.0
         version: 9.8.0
@@ -132,8 +132,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       convex:
-        specifier: ^1.31.7
-        version: 1.31.7(react@19.1.0)
+        specifier: ^1.37.0
+        version: 1.37.0(react@19.1.0)
       crud:
         specifier: link:convex-helpers/server/crud
         version: link:convex-helpers/server/crud
@@ -160,7 +160,7 @@ importers:
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       openai:
         specifier: ^6.1.0
-        version: 6.1.0(zod@3.25.46)
+        version: 6.1.0(ws@8.18.0)(zod@3.25.46)
       oslo:
         specifier: ^1.2.1
         version: 1.2.1
@@ -2168,18 +2168,21 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  convex@1.31.7:
-    resolution: {integrity: sha512-PtNMe1mAIOvA8Yz100QTOaIdgt2rIuWqencVXrb4McdhxBHZ8IJ1eXTnrgCC9HydyilGT1pOn+KNqT14mqn9fQ==}
+  convex@1.37.0:
+    resolution: {integrity: sha512-xGSx5edIsXCEex3OU2U2N0oyB/cOa9qGwKiImF9yOWqjqZgOkx39idtpdlwNBTBSt4S30oAvs4yeXY5xxPIX3A==}
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
       '@auth0/auth0-react': ^2.0.1
       '@clerk/clerk-react': ^4.12.8 || ^5.0.0
+      '@clerk/react': ^6.4.3
       react: ^18.0.0 || ^19.0.0-0 || ^19.0.0
     peerDependenciesMeta:
       '@auth0/auth0-react':
         optional: true
       '@clerk/clerk-react':
+        optional: true
+      '@clerk/react':
         optional: true
       react:
         optional: true
@@ -3365,6 +3368,18 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
+  ws@8.18.0:
+    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -3563,10 +3578,10 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
-  '@convex-dev/auth@0.0.86(@auth/core@0.37.4)(convex@1.31.7(react@19.1.0))(react@19.1.0)':
+  '@convex-dev/auth@0.0.86(@auth/core@0.37.4)(convex@1.37.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@auth/core': 0.37.4
-      convex: 1.31.7(react@19.1.0)
+      convex: 1.37.0(react@19.1.0)
       cookie: 1.0.2
       is-network-error: 1.1.0
       jose: 5.10.0
@@ -5203,12 +5218,16 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex@1.31.7(react@19.1.0):
+  convex@1.37.0(react@19.1.0):
     dependencies:
       esbuild: 0.27.0
       prettier: 3.5.3
+      ws: 8.18.0
     optionalDependencies:
       react: 19.1.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   cookie@1.0.2: {}
 
@@ -5849,8 +5868,9 @@ snapshots:
 
   object-assign@4.1.1: {}
 
-  openai@6.1.0(zod@3.25.46):
+  openai@6.1.0(ws@8.18.0)(zod@3.25.46):
     optionalDependencies:
+      ws: 8.18.0
       zod: 3.25.46
 
   optionator@0.9.4:
@@ -6297,6 +6317,8 @@ snapshots:
       isexe: 2.0.0
 
   word-wrap@1.2.5: {}
+
+  ws@8.18.0: {}
 
   yallist@3.1.1: {}
 
